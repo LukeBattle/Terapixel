@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+*application-checkpoints.csv
+*gpu.csv
+*task-x-y.csv
+*application.checkpoints.RData
+*gpu.RData
+*task.x.y.RData
+*application.checkpoints.hash
+*gpu.hash
+*task.x.y.hash

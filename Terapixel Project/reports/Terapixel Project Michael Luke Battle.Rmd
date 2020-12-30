@@ -1,0 +1,43 @@
+---
+title: "Terapixel Project"
+author: "Michael Luke Battle"
+date: "30/12/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project Requirements
+
+### Written Report Outline
+
+What is the need for the project?
+
+Justify your choice of response (i.e. the nature of, and your plan for, your project). To give strength to your argument you should reference to practice elsewhere (e.g. in academic literature, opr industry practices)
+
+How successful has it been? Provide evidence, using appropriate evaluation methodologies, and comment on the strengths/weaknbesses of your evidencen in answering this question
+
+What are the future implications for work in this area? If applicable, which areas of extension work are now possible due to the foundational work yyou have performed in this project?
+
+A brief reflection on your personal and professional learning in undertaking this project. Here, you can comment on how you found the process, what you learned about the technologies and methodologies you used, which aspects you found most difficult/straightforward, and any conclusions which will inform the way you undertake similar projects in the future
+
+### Structured Abstract
+
+REMEMBER TO INCLUDE STRUCTURED ABSTRACT
+
+### EDA Findings
+
+You should also produce additional documentation detailing the findings from your exploratory analysis. You are encouraged to make use of a literate programming framework, e.g. R Markdown, to align analytic code with narrative  tetx. You should submit the source file(s) for the notebooks as well as output saved in PDF Format. No limit on length for this document!
+
+Which event types dominate task runtimes?
+
+What is the interplay between GPU temperature and performance?
+
+What is the interplay between increased power draw and render time?
+-- Can we quantify the variation in computation requirements for particular tiles?
+
+Can we identify particular GPU cards (based on their serial numbers) whose performance differs to other cards? (i.e. perpetually slow cards).
+
+What can we learn about the efficiency of the task scheduling process?
