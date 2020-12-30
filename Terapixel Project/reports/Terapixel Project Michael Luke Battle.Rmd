@@ -31,9 +31,9 @@ REMEMBER TO INCLUDE STRUCTURED ABSTRACT
 
 You should also produce additional documentation detailing the findings from your exploratory analysis. You are encouraged to make use of a literate programming framework, e.g. R Markdown, to align analytic code with narrative  tetx. You should submit the source file(s) for the notebooks as well as output saved in PDF Format. No limit on length for this document!
 
-Which event types dominate task runtimes?
+Which event types dominate task runtimes? (app checkpoints)
 
-What is the interplay between GPU temperature and performance?
+What is the interplay between GPU temperature and performance? (gpu)
 
 What is the interplay between increased power draw and render time?
 -- Can we quantify the variation in computation requirements for particular tiles?
