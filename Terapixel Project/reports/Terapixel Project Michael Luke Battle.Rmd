@@ -27,7 +27,7 @@ A brief reflection on your personal and professional learning in undertaking thi
 
 REMEMBER TO INCLUDE STRUCTURED ABSTRACT
 
-### EDA Findings
+### EDA Findings.
 
 You should also produce additional documentation detailing the findings from your exploratory analysis. You are encouraged to make use of a literate programming framework, e.g. R Markdown, to align analytic code with narrative  tetx. You should submit the source file(s) for the notebooks as well as output saved in PDF Format. No limit on length for this document!
 

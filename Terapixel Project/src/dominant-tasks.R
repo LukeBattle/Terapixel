@@ -1,40 +1,22 @@
-library(tidyverse)
-library(lubridate)
-library(parallel)
+
+library(ProjectTemplate)
+load.project()
+
 str(application.checkpoints)
+
 #check NAs
 
 sum(is.na.data.frame(application.checkpoints))
 
-str(application.checkpoints)
-
-app_data = as_tibble(application.checkpoints)
 
 
-clean_date_time = function(string) {
-  string_rep = str_replace(string, "T"," ")
-  string_rep2 = str_replace(string_rep, "Z","")
-  return(string_rep2)
-
-}
-
-test_string = lapply(application.checkpoints$timestamp,clean_date_time)
+#change options to show three d.p.
 
 op = options(digits.secs = 3)
 
 #use options(op) to reset options
 
-date_time = parse_date_time(test_string,"%Y%m%d %H%M%S")
-
-app_data$timestamp = date_time
-
-app_data = unique(app_data)
-
-app_wide = app_data %>%
-  pivot_wider(names_from = eventType,
-              values_from = timestamp)
-
-app_wide$runtime = app_wide$STOP - app_wide$START
+#create plot to show varying average runtimes for each event 
 
 event_runtime_plot  = ggplot(data = app_wide, aes(x = eventName, y = runtime)) +  
     stat_summary(fun = mean, geom = "col") +
@@ -46,5 +28,54 @@ event_runtime_plot  = ggplot(data = app_wide, aes(x = eventName, y = runtime)) +
 
 event_runtime_plot
 
+
+#check runtime max in datasets
+max(totalrender_data$runtime)
+max(app_wide$runtime)
+
+
+colnames(gpu_data)
+
+
+length(unique(gpu$hostname))
+
+length(unique(app_data$hostname))
+
+#plot runtime vs powerdraw
+
+(power_runtime_plot  = ggplot(data = gpu_app_data, aes(x = powerDrawWatt, y = as.numeric(runtime))) +
+  geom_point() +
+  labs(
+    x = "Power Draw (Watts)",
+    y = "Seconds",
+    title = "Power Draw vs runtime"
+  ))
+
+#plot temp vs runtime
+
+(temp_runtime_plot  = ggplot(data = gpu_app_data, aes(x = gpuTempC, y = as.numeric(runtime))) +
+    geom_point() +
+    labs(
+      x = "TempC",
+      y = "Seconds",
+      title = "TempC vs runtime"
+    ))
+
+
+unique(app_data$jobId)
+
+max(gpu_app_data$runtime)
+
+
+
+#create plot of runtime vs pixel
+
+(task_runtime_plot  = ggplot(data = filter(pixel_summary,level == 12), aes(x = x, y = y, color = as.numeric(runtime))) +
+    geom_point() +
+    labs(
+      x = "x",
+      y = "y",
+      title = ""
+    ))
 
 
