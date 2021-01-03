@@ -15,11 +15,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 What is the need for the project?
 
-Justify your choice of response (i.e. the nature of, and your plan for, your project). To give strength to your argument you should reference to practice elsewhere (e.g. in academic literature, opr industry practices)
+Justify your choice of response (i.e. the nature of, and your plan for, your project). To give strength to your argument you should reference to practice elsewhere (e.g. in academic literature, or industry practices)
 
-How successful has it been? Provide evidence, using appropriate evaluation methodologies, and comment on the strengths/weaknbesses of your evidencen in answering this question
+How successful has it been? Provide evidence, using appropriate evaluation methodologies, and comment on the strengths/weaknesses of your evidence in answering this question
 
-What are the future implications for work in this area? If applicable, which areas of extension work are now possible due to the foundational work yyou have performed in this project?
+What are the future implications for work in this area? If applicable, which areas of extension work are now possible due to the foundational work you have performed in this project?
 
 A brief reflection on your personal and professional learning in undertaking this project. Here, you can comment on how you found the process, what you learned about the technologies and methodologies you used, which aspects you found most difficult/straightforward, and any conclusions which will inform the way you undertake similar projects in the future
 

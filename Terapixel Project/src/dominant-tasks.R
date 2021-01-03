@@ -66,6 +66,21 @@ unique(app_data$jobId)
 
 max(gpu_app_data$runtime)
 
+#calculate runtime of whole render process from app_data
+
+max(totalrender_data$STOP)- min(totalrender_data$START)
+
+max(gpu_data$START) - min(gpu_data$START)
+
+max(date_time) - min(date_time)
+
+unique(gpu_task_app_data$level)
+
+mean(filter(gpu_task_app_data,level==4)$runtime)
+
+mean(filter(gpu_task_app_data,level==8)$runtime)
+
+mean(filter(gpu_task_app_data,level==12)$runtime)
 
 
 #create plot of runtime vs pixel
