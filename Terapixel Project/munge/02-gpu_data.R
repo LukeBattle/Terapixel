@@ -18,9 +18,13 @@ gpu_datetime = parse_date_time(gpu_timestamp,"%Y%m%d %H%M%S")
 
 gpu_data$START = gpu_datetime
 
+cache('gpu_data')
+
 #merge gpu_data and totalrender_data based on START/STOP and hostname
 
 gpu_app_data = merge(totalrender_data,gpu_data[c("START","hostname","powerDrawWatt","gpuSerial","gpuTempC","gpuUtilPerc","gpuMemUtilPerc")],by = c("START","hostname"))
+
+cache('gpu_app_data')
 
 #create summary of gpu cards by serial number with averages for properties such as runtime, powerdrain, temp
 ##etc.
@@ -33,3 +37,7 @@ gpu_card_summary = gpu_app_data %>%
             memutil = mean(gpuMemUtilPerc),
             gpuutil = mean(gpuUtilPerc)) %>%
   arrange(desc(runtime))
+
+
+
+cache('gpu_card_summary')

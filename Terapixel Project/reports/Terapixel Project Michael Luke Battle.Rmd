@@ -6,7 +6,8 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = TRUE)
+knitr::opts_knit$set(root.dir= normalizePath('..'))
 ```
 
 ## Project Requirements
@@ -42,7 +43,11 @@ CRISP-DM Methodology:
 
 Background
 
+Maybe include more background information on Newcastle University and data
+
 With world-leading research in data, Newcastle University is always undertaking new challenges to advance the field. In order to keep up with ever-expanding amount of data produced by cities, one such challenge is to be able to effectively convey the information from this data to stakeholders. To address this issue, the University has created a terapixel image of the city of Newcastle upon Tyne, including environmental data such as temperature and humidity, from sensors across the city. This terapixel image contains over one trillion pixels and not only allows the entire city to be viewed, but is rendered at 12 different levels allowing users to zoom in whilst retaining full picture detail. However, rendering over one trillion pixels requires immense computing power, and so the University has made use of public cloud service *Microsoft Azure* to perform the rendering process. This facilitates a far quicker rendering process, which is more suitable for a primary requirement of the project - to ensure the terapixel image supports daily updates.
+
+Business Objectives
 
 Whilst Newcastle University has created this terapixel visualisation, it is important that the rendering process with cloud supercomputing is rigorously evaluated in order to identify any inefficiencies.  
 
@@ -54,8 +59,28 @@ Business Success Criteria
 
 ### Produce Project Plan
 
-
 ## Data Understanding
+
+```{r include=FALSE}
+#load project
+library(ProjectTemplate)
+load.project()
+
+
+```
+
+
+Describe Data
+
+In order to evaluate the rendering process, Newcastle University has provided three files detailing various aspects of a single run of the rendering process. The file "application.checkpoints.csv" has dimensions and variable names:
+
+```{r}
+dim(application.checkpoints)
+colnames(application.checkpoints)
+```
+
+
+provides the times that each event as part of the rendering process started and stopped for each pixel, as well as the total render time. These events are "Tiling", "Saving Config", "Render" and "Uploading". The file "gpu.csv" details 
 
 Three files, task.x.y, application.checkpoints and gpu. 
 

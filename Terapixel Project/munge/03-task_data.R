@@ -6,6 +6,8 @@ task_data = as_tibble(task.x.y)
 
 gpu_task_app_data = merge(gpu_app_data,task_data,by = c("jobId","taskId"))
 
+cache('gpu_task_app_data')
+
 #create summary of average properties per pixel from task data
 
 pixel_summary = gpu_task_app_data %>%
@@ -16,3 +18,5 @@ pixel_summary = gpu_task_app_data %>%
             memutil = mean(gpuMemUtilPerc),
             gpuutil = mean(gpuUtilPerc)) %>%
   arrange(desc(runtime))
+
+cache('pixel_summary')

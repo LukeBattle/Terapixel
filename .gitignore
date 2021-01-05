@@ -11,3 +11,17 @@
 *application.checkpoints.hash
 *gpu.hash
 *task.x.y.hash
+*app_data.RData
+*app_data.hash
+*app_wide.RData
+*app_wide.hash
+*gpu_app_data.RData
+*gpu_app_data.hash
+*gpu_card_summary.RData
+*gpu_card_summary.hash
+*gpu_data.RData
+*gpu_data.hash
+*gpu_task_app_data.RData
+*gpu_task_app_data.hash
+*pixel_summary.RData
+*pixel_summary.hash

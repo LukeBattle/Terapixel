@@ -8,7 +8,9 @@ str(application.checkpoints)
 
 sum(is.na.data.frame(application.checkpoints))
 
+unique(application.checkpoints$eventName)
 
+dim(application.checkpoints)
 
 #change options to show three d.p.
 

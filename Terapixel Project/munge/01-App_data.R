@@ -18,6 +18,8 @@ app_data$timestamp = date_time
 
 app_data = unique(app_data)
 
+cache('app_data')
+
 #convert to wide format so that START and STOP are separate columns
 
 app_wide = app_data %>%
@@ -28,5 +30,5 @@ app_wide = app_data %>%
 
 app_wide$runtime = app_wide$STOP - app_wide$START
 
-
+cache('app_wide')
 
