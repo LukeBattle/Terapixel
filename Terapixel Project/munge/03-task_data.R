@@ -1,6 +1,6 @@
 #create tibble of task.x.y data
 
-task_data = as.tibble(task.x.y)
+task_data = as_tibble(task.x.y)
 
 #merge task data to gpu and app data by jobId and taskId
 

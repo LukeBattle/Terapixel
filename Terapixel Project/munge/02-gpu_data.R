@@ -4,7 +4,7 @@ totalrender_data = filter(app_wide,eventName == "TotalRender")
 
 #create tibble of gpu dataset
 
-gpu_data = as.tibble(gpu)
+gpu_data = as_tibble(gpu)
 
 #create list of clean date_times from gpu dataset
 
