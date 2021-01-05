@@ -6,11 +6,14 @@ str(application.checkpoints)
 
 #check NAs
 
-sum(is.na.data.frame(application.checkpoints))
+sum(is.na(application.checkpoints))
 
-unique(application.checkpoints$eventName)
+sum(is.na(gpu))
 
-dim(application.checkpoints)
+sum(is.na(task.x.y))
+
+
+
 
 #change options to show three d.p.
 
@@ -35,11 +38,19 @@ event_runtime_plot
 max(totalrender_data$runtime)
 max(app_wide$runtime)
 
+dim(task.x.y)
 
-colnames(gpu_data)
+str(task.x.y)
 
+str(gpu)
 
-length(unique(gpu$hostname))
+str(application.checkpoints)
+
+class(task.x.y$taskId[1])
+
+length(unique(task.x.y$jobId))
+
+unique(task.x.y[c("jobId","level")])
 
 length(unique(app_data$hostname))
 

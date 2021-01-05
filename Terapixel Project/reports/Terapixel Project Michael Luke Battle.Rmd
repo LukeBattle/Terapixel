@@ -66,7 +66,6 @@ Business Success Criteria
 library(ProjectTemplate)
 load.project()
 
-
 ```
 
 
@@ -77,12 +76,87 @@ In order to evaluate the rendering process, Newcastle University has provided th
 ```{r}
 dim(application.checkpoints)
 colnames(application.checkpoints)
+str(application.checkpoints)
+```
+Where the "eventType" can be either "START" or "STOP" to indicate the end of beginning of an event, and "eventName" can take the following values;
+
+```{r}
+unique(application.checkpoints$eventName)
+```
+In which "TotalRender" is a combination of all other events, which represent different parts of the whole rendering process. In addition to "eventType" and "eventName", "timestamp" gives the time associated with this event starting or stopping, "hostname" is the hostname of the virtual machine auto-assigned by the Azure batch system and "jobId" and "taskId" are the unique IDs of the Azure batch job and task, respectively.
+
+The file "gpu.csv" has the following dimensions and variable names, with all variable values being of class character:
+
+```{r}
+dim(gpu)
+colnames(gpu)
+str(gpu)
+```
+
+The variable names "timestamp" and "hostname" have the same meaning as in "application.checkpoints.csv". "gpuSerial" and "gpuUUID" are the serial number and unique ID of the physical GPU card, which represent a one-to-one match the "hostname" variable. As there are 1024 gpu cores, there are 1024 different values for "hostname", "gpuSerial" and "gpuUUID". 
+
+```{r}
+length(unique(gpu$hostname))
+length(unique(gpu$gpuSerial))
+length(unique(gpu$gpuUUID))
+
+dim(unique(gpu[c("hostname","gpuSerial","gpuUUID")]))
+```
+
+The additional variables in this data set are quantitative variables describing different aspects of the cores. These include "powerDrawWatt" (the power draw of the GPU in watts), "gpuTempC" (the temperature of the GPU in Celsius), "gpuUtilPerc" (the percent utilisation of the GPU core) and "gpuMemUtilPerc" (the percent utilisation of the GPU memory).
+
+We can also observe that variables "timestamp", "hostname" and "gpuUUID" are of class character, whilst variables "gpuSerial" and "powerDrawWatt" are of class numeric. Lastly, variables "gpuTempC", "gpuUtilPerc" and "gpuMemUtilPerc" are integer values.
+
+```{r}
+str(gpu)
+```
+
+The final file that we will use is "task.x.y.csv". This file has the dimensions and variables:
+
+```{r}
+dim(task.x.y)
+colnames(task.x.y)
+
 ```
 
 
-provides the times that each event as part of the rendering process started and stopped for each pixel, as well as the total render time. These events are "Tiling", "Saving Config", "Render" and "Uploading". The file "gpu.csv" details 
+Variables "jobId" and "taskId" are the same as in "application.checkpoints.csv", whilst "x" and "y" represent the location of each pixel being rendered. The "Level" variable allows users to zoom into the visualisation. In total there are 12 levels, however only levels 12, 8 and 4 and rendered whilst the other levels are derived in the tiling process. Level 12 is when the the image at maximum zoom, and level 1 is when the image is zoomed right out. The "jobId" relates to the "Level" variable, so in total there are three different "jobId" values corresponding to the three levels that are rendered, as shown below:
 
-Three files, task.x.y, application.checkpoints and gpu. 
+```{r}
+unique(task.x.y[c("jobId","level")])
+```
+We can also observe that the values in "taskId" and "jobId" are of class character, whilst the other variables are of class integer.
+
+```{r}
+str(task.x.y)
+```
+
+
+Data Quality
+
+With the data described at a high level, it is necessary to assess the quality of it. First we can check for any missing values using the below code.
+
+```{r}
+sum(is.na(application.checkpoints))
+
+sum(is.na(gpu))
+
+sum(is.na(task.x.y))
+```
+
+As we are satisfied that there is no missing data, we can now check the data for duplicates.
+
+```{r}
+dim(application.checkpoints)[1] - dim(unique(application.checkpoints))[1]
+
+dim(gpu)[1] - dim(unique(gpu))[1]
+
+dim(task.x.y)[1] - dim(unique(task.x.y))[1]
+```
+
+We can see that there are 2,470 duplicates in "application.checkpoints.csv", 9 in "gpu.csv" and none in "task.x.y.csv". With no missing data and only a small percentage of the data in duplicate, the data is of good quality and we can proceed with the data preparation phase of the analysis.
+
+
 
 Look for blanks
 
