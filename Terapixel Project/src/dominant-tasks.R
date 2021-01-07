@@ -33,14 +33,13 @@ op = options(digits.secs = 3)
 #use options(op) to reset options
 
 
+length(unique(filter(gpu_data,gpuUtilPerc == 0 & gpuMemUtilPerc == 0)$gpuSerial))
 
-runtime_plot
 
-length(unique(filter(gpu_data,gpuUtilPerc == 0)$gpuSerial))
 
-sum(gpu$gpuUtilPerc < 25)
 
-gpu_data2 = gpu_data[gpu_data$gpuUtilPerc!=0,]
+task.x.y %>%
+  count(totalrender_data$taskId)
 
 #create plot to show varying average runtimes for each event 
 
@@ -77,7 +76,7 @@ length(unique(app_data$hostname))
 
 #plot runtime vs powerdraw
 
-(power_runtime_plot  = ggplot(data = gpu_app_data, aes(x = powerDrawWatt, y = as.numeric(runtime))) +
+(power_runtime_plot  = ggplot(data = gpu_app_data, aes(x = powerDraw, y = as.numeric(runtime))) +
   geom_point() +
   labs(
     x = "Power Draw (Watts)",
@@ -87,7 +86,7 @@ length(unique(app_data$hostname))
 
 #plot temp vs runtime
 
-(temp_runtime_plot  = ggplot(data = gpu_app_data, aes(x = gpuTempC, y = as.numeric(runtime))) +
+(temp_runtime_plot  = ggplot(data = gpu_app_data, aes(x = tempC, y = as.numeric(runtime))) +
     geom_point() +
     labs(
       x = "TempC",
@@ -149,4 +148,36 @@ mean(filter(gpu_task_app_data,level==12)$runtime)
     ))
 
 dim(unique(app_task_data[c("x","y")]))
+
+
+#check that task_no is assigned correctly
+
+unique_app_task = function(hostn) {
+  return(length(unique(app_data[app_data$hostname == hostn,]$taskId)))
+  
+}
+
+unique_app_tasks = lapply(unique_hostnames,unique_app_task)
+
+unique_app_tasks = numeric(1024)
+count = 1
+for (i in unique_hostnames) {
+  filt_data = filter(totalrender_data,hostname == i)
+  unique_app_tasks[count] = max(filt_data$task_no)
+  count = count +1
+}
+
+unique_gpu_tasks = numeric(1024)
+count = 1
+for (i in unique_hostnames) {
+  filt_data = filter(gpu_data,hostname == i)
+  unique_gpu_tasks[count] = max(filt_data$task_no)
+  count = count +1
+}
+
+
+view(filter(gpu_data,hostname == unique_hostnames[703]))
+view(filter(totalrender_data,hostname == unique_hostnames[703]))
+
+sum(unique_app_tasks == unique_gpu_tasks)
 

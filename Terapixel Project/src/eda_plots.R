@@ -47,3 +47,12 @@ runtime_plot  = ggplot(data = filter(app_wide,eventName == "TotalRender"), aes(x
     y = "Freq",
     title = ""
   )
+
+(zero_plot = ggplot(data = zero_data_example, aes(x = Time, y = gpuUtilPerc)) +  
+  geom_line() +
+  labs(
+    x = "Time",
+    y = "gpuUtilPerc",
+    title = ""
+  ))
+

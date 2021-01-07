@@ -51,40 +51,28 @@ gpu_data$Time = gpu_datetime
 
 cache('gpu_data')
 
-gpu_task = numeric(length(gpu_datetime))
+gpu_data = gpu_data %>%
+  arrange(hostname,Time)
 
-gpu_hostname = gpu_data$hostname
+unique_hostnames = unique(gpu_data$hostname)
 
-for (i in 1:length(gpu_data$hostname)) {
-  gpu_task[i] = event_data$task_no[event_data$hostname == gpu_hostname[i] 
-                                   & gpu_datetime[i] %within% event_data$time_interval][1]
-}
+task_no_gpu = lapply(unique_hostnames,assign_task_no)
 
-gpu_data$task_no = gpu_task
+task_no_vec = unlist(task_no_gpu)
 
-gpu_app_data = left_join(event_data,gpu_data, by = c("hostname","task_no"))
+gpu_data$task_no = task_no_vec
 
-gpu_app_data = na.omit(gpu_app_data)
+gpu_summary = gpu_data[gpu_data$gpuMemUtilPerc!=0,] %>%
+  group_by(hostname,task_no,gpuSerial) %>%
+  summarise(powerDraw = median(powerDrawWatt),
+            tempC = median(gpuTempC),
+            MemUtilPerc = median(gpuMemUtilPerc),
+            GpuUtilPerc = median(gpuUtilPerc))
 
 
-
-test1 = totalrender_data[totalrender_data$hostname == gpu_hostname[49],]
-test1$task_no[gpu_datetime[49] %within% test1$time_interval]
-
-take_hostname = function(x) {
-  temp = totalrender_data[totalrender_data$hostname == x,]
-  return(temp)
-}
-
-hostname_filt = apply
-
-#merge gpu_data and totalrender_data based on START/STOP and hostname
-
-gpu_app_data = merge(totalrender_data,gpu_data[c("START","hostname","powerDrawWatt","gpuSerial","gpuTempC","gpuUtilPerc","gpuMemUtilPerc")],by = c("START","hostname"))
+gpu_app_data = left_join(totalrender_data,gpu_summary, by = c("hostname","task_no"))
 
 cache('gpu_app_data')
-
-
 
 
 #create summary of gpu cards by serial number with averages for properties such as runtime, powerdrain, temp
@@ -93,10 +81,10 @@ cache('gpu_app_data')
 gpu_card_summary = gpu_app_data %>%
   group_by(gpuSerial,hostname) %>%
   summarise(runtime = mean(runtime),
-            powerdrain = mean(powerDrawWatt),
-            temp = mean(gpuTempC),
-            memutil = mean(gpuMemUtilPerc),
-            gpuutil = mean(gpuUtilPerc)) %>%
+            powerdrain = mean(powerDraw),
+            temp = mean(tempC),
+            memutil = mean(MemUtilPerc),
+            gpuutil = mean(GpuUtilPerc)) %>%
   arrange(desc(runtime))
 
 

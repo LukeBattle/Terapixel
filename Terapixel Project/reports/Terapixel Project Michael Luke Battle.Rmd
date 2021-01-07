@@ -214,9 +214,19 @@ app_wide$runtime = app_wide$STOP - app_wide$START
 
 ```
 
+There are several issues with the data in "gpu" that we must address. Firstly, the values in the "timestamp" variable are in the same class and format as in the raw "application.checkpoints" file. As previously with "application.checkpoints", we take the same steps to transform this into a more meaningful and computationally compatible variable. We also remove the duplicates from the data. With the "timestamp" values now of class POSIXct and duplicates removed, we can turn out attention to the outliers in the data. Whether these outliers should be retained in the data or not is dependent upon if they are meaningful or an error. To explore this, we can first check if the observations with 0 for variable "gpuUtilPerc" and "gpuUtilPerc" are limited to a subset of GPUs or to all. If they are limited to a subset of them, this may express a different characteristic specific to those GPUs, in which case these outliers may have some meaning. We can check this with the below code that counts how many unique GPUs have instances where both "gpuUtilPerc" and "gpuMemUtilPerc" take a value of 0.
+
+```{r}
+length(unique(filter(gpu_data,gpuUtilPerc == 0 & gpuMemUtilPerc == 0)$gpuSerial))
+```
+
+As there is an observation where both variables have a value of 0 for each GPU in the supercomputer, it is clear that this does not tell us anything specific about the GPU. Another possible explanation of these is that they related to the pixel that is being rendered. However, a closer inspection of an instance where such an observation occurs shows that 
+
+As the task.x.y data set contains no duplicates or missing values, there is no need for any cleaning of this data.
+
 Integrate Data
 
-With each data set reformatted, we can commence merging them to derive additional interpretations from the data. To begin, we can assign a TotalRender runtime to each pixel in the terapixel image by combining the data from "app_wide" and "task.x.y". First we ca
+With each data set reformatted, we can commence merging them to derive additional interpretations from the data. To begin, we can assign a TotalRender runtime to each pixel in the terapixel image by combining the data from "app_wide" and "task.x.y". First, we create a new data set containing only values with eventType "TotalRender". We can then confirm that the variable "taskId" is both a primary key in this data set as well as a foreign key for "task.x.y".
 
 ```{r}
 totalrender_data %>%
@@ -224,8 +234,17 @@ totalrender_data %>%
   filter(n > 1)
 
 task.x.y %>%
+  count(totalrender_data$taskId)
+
+task.x.y %>%
   count(totalrender_data$taskId) %>%
   filter(n>1)
+```
+
+We can therefore join both data sets simply using the "taskId" variable with the below code:
+
+```{r eval = FALSE}
+app_task_data = left_join(totalrender_data,task_data[c("taskId","x","y","level")],by = c("taskId"))
 ```
 
 
