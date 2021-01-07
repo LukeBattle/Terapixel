@@ -12,14 +12,35 @@ sum(is.na(gpu))
 
 sum(is.na(task.x.y))
 
+# Check duplicates
 
+dim(application.checkpoints)[1] - dim(unique(application.checkpoints))[1]
 
+duplicate_app_rows = application.checkpoints[duplicated(application.checkpoints),]
+
+duplicate_gpu_rows = gpu[duplicated(gpu),]
+
+dim(task.x.y)[1] - dim(unique(task.x.y))[1]
+
+view(filter(gpu,timestamp == duplicate_gpu_rows$timestamp))
+
+dim(gpu)[1] - dim(unique(gpu))[1]
 
 #change options to show three d.p.
 
 op = options(digits.secs = 3)
 
 #use options(op) to reset options
+
+
+
+runtime_plot
+
+length(unique(filter(gpu_data,gpuUtilPerc == 0)$gpuSerial))
+
+sum(gpu$gpuUtilPerc < 25)
+
+gpu_data2 = gpu_data[gpu_data$gpuUtilPerc!=0,]
 
 #create plot to show varying average runtimes for each event 
 
@@ -75,6 +96,27 @@ length(unique(app_data$hostname))
     ))
 
 
+unique_hostname = unique(gpu$hostname)
+hostname_count = numeric(length(unique_hostname))
+count = 1
+for (i in unique_hostname) {
+  hostname_count[count] = sum(gpu$hostname == i)
+  count = count + 1
+}
+
+hostname_count_df = cbind(unique_hostname,hostname_count)
+
+unique_app_hostname = unique(application.checkpoints$hostname)
+app_hostname_count = numeric(length(unique_app_hostname))
+count = 1
+for (i in unique_app_hostname) {
+  app_hostname_count[count] = sum(application.checkpoints$hostname == i)
+  count = count + 1
+}
+
+app_hostname_count_df = cbind(unique_app_hostname,app_hostname_count)
+
+
 unique(app_data$jobId)
 
 max(gpu_app_data$runtime)
@@ -98,7 +140,7 @@ mean(filter(gpu_task_app_data,level==12)$runtime)
 
 #create plot of runtime vs pixel
 
-(task_runtime_plot  = ggplot(data = filter(pixel_summary,level == 12), aes(x = x, y = y, color = as.numeric(runtime))) +
+(task_runtime_plot  = ggplot(data = filter(app_task_data,level == 12), aes(x = x, y = y, color = as.numeric(runtime))) +
     geom_point() +
     labs(
       x = "x",
@@ -106,4 +148,5 @@ mean(filter(gpu_task_app_data,level==12)$runtime)
       title = ""
     ))
 
+dim(unique(app_task_data[c("x","y")]))
 

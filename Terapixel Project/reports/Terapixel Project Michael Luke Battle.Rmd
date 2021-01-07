@@ -68,6 +68,10 @@ load.project()
 
 ```
 
+```{r include=FALSE}
+source("src/eda_plots.R")
+```
+
 
 Describe Data
 
@@ -154,15 +158,78 @@ dim(gpu)[1] - dim(unique(gpu))[1]
 dim(task.x.y)[1] - dim(unique(task.x.y))[1]
 ```
 
-We can see that there are 2,470 duplicates in "application.checkpoints.csv", 9 in "gpu.csv" and none in "task.x.y.csv". With no missing data and only a small percentage of the data in duplicate, the data is of good quality and we can proceed with the data preparation phase of the analysis.
+We can see that there are 2,470 duplicates in "application.checkpoints.csv", 9 in "gpu.csv" and none in "task.x.y.csv". With no missing data and only a small percentage of the data in duplicate, the data is of good quality with respect to duplicates and missing data.
 
+Although there is no missing data in the sense of NULL values, "gpu" has a significant population of outliers. We can observe this by plotting histograms for each quantitative variable in the data set. 
 
+```{r echo=FALSE}
+grid.arrange(gputemp_plot,gpupowerdraw_plot,gpuutil_plot,gpumemutil_plot,ncol = 2,nrow =2)
+```
 
-Look for blanks
-
-Look for duplicates
+From the above histograms we can can observe significant noise in variables gpuUtilPerc, gpuMemUtilPerc and powerDrawWatt. Specifically, in gpuMemUtilPerc and gpuUtilPerc this noise is localised around 0. In the following section these outliers will be investigated and the data transformed into the a more suitable format for analysis.
 
 ## Data Preparation
+
+In order to rigorously evaluate the supercomputer rendering process, it is important to examine all aspects of it. We will therefore use the data in all three files for our analysis. First of all, we will prepare the data in "application.checkpoints".
+
+As the data in "application.checkpoints" is clean, we can proceed with using it to transform the data into a more useful format whilst deriving new attributes from it. To make the "timestamp" variable more meaningful, we can convert it from class character to datetime format, or POSIXct. As each value in "timestamp" is of the form "`r application.checkpoints$timestamp[1]`", we can use the below function to remove the letters "T" and "Z".
+
+```{r eval = FALSE}
+clean_date_time = function(string) {
+  string_rep = str_replace(string, "T"," ")
+  string_rep2 = str_replace(string_rep, "Z","")
+  return(string_rep2)
+}
+```
+
+Then, the resulting "timestamp" values are parsed into into POSIXct form, and the duplicates that were found in the *Data Understanding* section of this report are removed.
+
+```{r eval = FALSE}
+
+#apply clean_date_time function to date_time in data and create list
+date_time_chr = lapply(application.checkpoints$timestamp,clean_date_time)
+
+#create list of date-times converted to datetime format
+date_time = parse_date_time(date_time_chr,"%Y%m%d %H%M%S")
+
+#change timestamp to converted date_time format
+app_data$timestamp = date_time
+
+#remove duplicates
+app_data = unique(app_data)
+
+```
+
+With the "timestamp" variable in a more computational-friendly format, we can now derive the runtime for each event. First, the data must be converted from long format to wide format with respect to the eventType variable. Then, the start time of the event can be subtracted from the stop time to calculate the runtime. This is performed with the below code.
+
+```{r eval = FALSE}
+
+#convert to wide format so that START and STOP are separate columns
+app_wide = app_data %>%
+  pivot_wider(names_from = eventType,
+              values_from = timestamp)
+
+#create runtime variable by calculating time difference from start to stop timestamp
+app_wide$runtime = app_wide$STOP - app_wide$START
+
+```
+
+Integrate Data
+
+With each data set reformatted, we can commence merging them to derive additional interpretations from the data. To begin, we can assign a TotalRender runtime to each pixel in the terapixel image by combining the data from "app_wide" and "task.x.y". First we ca
+
+```{r}
+totalrender_data %>%
+  count(taskId) %>%
+  filter(n > 1)
+
+task.x.y %>%
+  count(totalrender_data$taskId) %>%
+  filter(n>1)
+```
+
+
+
 
 Go through process of creating full merged dataset to combine all three
 
