@@ -25,3 +25,10 @@
 *gpu_task_app_data.hash
 *pixel_summary.RData
 *pixel_summary.hash
+*gpu_summary.RData
+*gpu_summary.hash
+*totalrender_data.RData
+*totalrender_data.hash
+*vm_waiting_times.RData
+*vm_waiting_times.hash
+

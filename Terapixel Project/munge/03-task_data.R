@@ -4,11 +4,9 @@ task_data = as_tibble(task.x.y)
 
 #merge task data to gpu and app data by jobId and taskId
 
-gpu_task_app_data = merge(gpu_app_data,task_data,by = c("jobId","taskId"))
+all_data = left_join(gpu_app_data,task_data[c("taskId","x","y","level")],by = c("taskId"))
 
-app_task_data = left_join(totalrender_data,task_data[c("taskId","x","y","level")],by = c("taskId"))
-
-cache('gpu_task_app_data')
+cache('all_data')
 
 #create summary of average properties per pixel from task data
 

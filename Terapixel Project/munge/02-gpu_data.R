@@ -1,35 +1,3 @@
-#create dataset with just totalrender events
-
-totalrender_data = filter(app_wide,eventName == "TotalRender") %>%
-  arrange(hostname,START)
-
-task_no_per_host = vector()
-unique_app_hostname = unique(totalrender_data$hostname)
-
-for (i in unique_app_hostname) {
-  host_no = sum(totalrender_data$hostname == i)
-  task_no_per_host = append(task_no_per_host,1:host_no)
-}
-
-totalrender_data$task_no = task_no_per_host
-
-totalrender_data$time_interval = interval(totalrender_data$START,totalrender_data$STOP)
-
-event_data = filter(app_wide,eventName != "TotalRender") %>%
-  arrange(hostname,START)
-
-event_data$time_interval = interval(event_data$START,event_data$STOP)
-
-task_no_per_host = vector()
-unique_app_hostname = unique(event_data$hostname)
-
-for (i in unique_app_hostname) {
-  host_no = sum(event_data$hostname == i)
-  task_no_per_host = append(task_no_per_host,1:host_no)
-}
-
-event_data$task_no = task_no_per_host
-
 
 #create tibble of gpu dataset
 
@@ -49,25 +17,27 @@ gpu_datetime = parse_date_time(gpu_timestamp,"%Y%m%d %H%M%S")
 
 gpu_data$Time = gpu_datetime
 
-cache('gpu_data')
-
 gpu_data = gpu_data %>%
   arrange(hostname,Time)
+
+cache('gpu_data')
 
 unique_hostnames = unique(gpu_data$hostname)
 
 task_no_gpu = lapply(unique_hostnames,assign_task_no)
 
-task_no_vec = unlist(task_no_gpu)
+task_no_gpu = unlist(task_no_gpu)
 
-gpu_data$task_no = task_no_vec
+gpu_data$task_no = task_no_gpu
 
 gpu_summary = gpu_data[gpu_data$gpuMemUtilPerc!=0,] %>%
   group_by(hostname,task_no,gpuSerial) %>%
-  summarise(powerDraw = median(powerDrawWatt),
-            tempC = median(gpuTempC),
-            MemUtilPerc = median(gpuMemUtilPerc),
-            GpuUtilPerc = median(gpuUtilPerc))
+  summarise(powerDraw = mean(powerDrawWatt),
+            tempC = mean(gpuTempC),
+            MemUtilPerc = mean(gpuMemUtilPerc),
+            GpuUtilPerc = mean(gpuUtilPerc))
+
+cache('gpu_summary')
 
 
 gpu_app_data = left_join(totalrender_data,gpu_summary, by = c("hostname","task_no"))
@@ -90,3 +60,11 @@ gpu_card_summary = gpu_app_data %>%
 
 
 cache('gpu_card_summary')
+
+vm_waiting_times = lapply(unique_hostnames,waiting_time_perc)
+
+vm_waiting_times = unlist(vm_waiting_times)
+
+cache('vm_waiting_times')
+
+

@@ -32,5 +32,22 @@ app_wide$runtime = app_wide$STOP - app_wide$START
 
 cache('app_wide')
 
+#create dataset with just totalrender events
+
+totalrender_data = filter(app_wide,eventName == "TotalRender") %>%
+  arrange(hostname,START)
+
+unique_app_hostname = unique(totalrender_data$hostname)
+
+task_no_per_host = lapply(unique_app_hostname,assign_tr_task)
+
+task_no_per_host = unlist(task_no_per_host)
+
+totalrender_data$task_no = task_no_per_host
+
+cache('totalrender_data')
+
+
+
 
 

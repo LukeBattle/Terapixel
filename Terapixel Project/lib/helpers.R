@@ -7,6 +7,7 @@ clean_date_time = function(string) {
   
 }
 
+#function to assign task_no to gpu data when ordered chronologically
 assign_task_no = function(hostn) {
   filt_data = filter(gpu_data,hostname == hostn)
   data_length = dim(filt_data)[1]
@@ -24,5 +25,21 @@ assign_task_no = function(hostn) {
     } else {task_no_vector[n] = task_count}
   }
   return(task_no_vector)
+}
+
+#calculates percentage of observations with gpuMemUtilPerc = 0 and gpuUtilPerc = 0 in gpu data in period from
+#beginning of first task to end of final task for a virtual machine
+waiting_time_perc = function(hostn) {
+  filt_data = filter(gpu_data,hostname == hostn & task_no != 0)
+  last_task_ref = min(which(filt_data$task_no == max(filt_data$task_no) & filt_data$gpuMemUtilPerc == 0))-1
+  filt_data = slice(filt_data,1:last_task_ref)
+  perc_zero = sum(filt_data$gpuMemUtilPerc == 0 & filt_data$gpuUtilPerc == 0)/dim(filt_data)[1] *100
+  return(perc_zero)
+}
+
+#returns task_no when totalrender_data is ordered for each virtual machine task
+assign_tr_task = function(hostn) {
+  host_no = sum(totalrender_data$hostname == hostn)
+  return(1:host_no)
 }
 

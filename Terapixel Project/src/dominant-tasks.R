@@ -33,9 +33,6 @@ op = options(digits.secs = 3)
 #use options(op) to reset options
 
 
-length(unique(filter(gpu_data,gpuUtilPerc == 0 & gpuMemUtilPerc == 0)$gpuSerial))
-
-
 
 
 task.x.y %>%
@@ -76,7 +73,8 @@ length(unique(app_data$hostname))
 
 #plot runtime vs powerdraw
 
-(power_runtime_plot  = ggplot(data = gpu_app_data, aes(x = powerDraw, y = as.numeric(runtime))) +
+(power_runtime_plot  = ggplot(filter(gpu_app_data, hostname == "04dc4e9647154250beeee51b866b0715000000"), 
+                              aes(x = powerDraw, y = as.numeric(runtime))) +
   geom_point() +
   labs(
     x = "Power Draw (Watts)",
@@ -84,9 +82,11 @@ length(unique(app_data$hostname))
     title = "Power Draw vs runtime"
   ))
 
+
 #plot temp vs runtime
 
-(temp_runtime_plot  = ggplot(data = gpu_app_data, aes(x = tempC, y = as.numeric(runtime))) +
+(temp_runtime_plot  = ggplot(filter(gpu_app_data, hostname == "04dc4e9647154250beeee51b866b0715000000"), 
+                             aes(x = tempC, y = as.numeric(runtime))) +
     geom_point() +
     labs(
       x = "TempC",
@@ -139,7 +139,15 @@ mean(filter(gpu_task_app_data,level==12)$runtime)
 
 #create plot of runtime vs pixel
 
-(task_runtime_plot  = ggplot(data = filter(app_task_data,level == 12), aes(x = x, y = y, color = as.numeric(runtime))) +
+(task_runtime_plot  = ggplot(data = filter(all_data,level == 12), aes(x = y, y = (-1*x), color = as.numeric(runtime))) +
+    geom_point() +
+    labs(
+      x = "x",
+      y = "y",
+      title = ""
+    ))
+
+(task_runtime_plot  = ggplot(data = filter(all_data,level == 12), aes(x = y, y = (-1*x), color = MemUtilPerc)) +
     geom_point() +
     labs(
       x = "x",
@@ -175,9 +183,24 @@ for (i in unique_hostnames) {
   count = count +1
 }
 
-
-view(filter(gpu_data,hostname == unique_hostnames[703]))
-view(filter(totalrender_data,hostname == unique_hostnames[703]))
-
 sum(unique_app_tasks == unique_gpu_tasks)
 
+gpu_summary %>%
+  count(hostname,task_no) %>%
+  filter(n > 1)
+
+gpu_summary %>%
+  count(hostname,task_no) %>%
+  filter(n > 1)
+
+totalrender_data %>%
+  count(hostname,task_no) %>%
+  filter(n > 1)
+
+sum(totalrender_data$hostname == gpu_summary$hostname) == length(gpu_summary$hostname)
+
+sum(totalrender_data$task_no == gpu_summary$task_no) == length(gpu_summary$hostname)
+
+gpu_app_data %>%
+  count(taskId) %>%
+  filter(n > 1)
