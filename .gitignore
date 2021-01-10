@@ -31,4 +31,9 @@
 *totalrender_data.hash
 *vm_waiting_times.RData
 *vm_waiting_times.hash
-
+*all_data.RData
+*all_data.hash
+*event_data.RData
+*event_data.hash
+*event_plot_data.RData
+*event_plot_data.hash

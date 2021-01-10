@@ -40,13 +40,7 @@ task.x.y %>%
 
 #create plot to show varying average runtimes for each event 
 
-event_runtime_plot  = ggplot(data = app_wide, aes(x = eventName, y = runtime)) +  
-    stat_summary(fun = mean, geom = "col") +
-    labs(
-      x = "Event Type",
-      y = "Seconds",
-      title = "Event Name vs Runtime (Seconds)"
-    )
+
 
 event_runtime_plot
 
@@ -55,17 +49,6 @@ event_runtime_plot
 max(totalrender_data$runtime)
 max(app_wide$runtime)
 
-dim(task.x.y)
-
-str(task.x.y)
-
-str(gpu)
-
-str(application.checkpoints)
-
-class(task.x.y$taskId[1])
-
-length(unique(task.x.y$jobId))
 
 unique(task.x.y[c("jobId","level")])
 

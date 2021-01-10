@@ -214,6 +214,21 @@ app_wide$runtime = app_wide$STOP - app_wide$START
 
 ```
 
+Using "runtime", we can check that the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. A new variable "TotalProcess" is then created which is the summation of the runtimes for events Saving Config, Render, Tiling and uploading. Creating a new variable to observe the difference between the original "TotalRender" variable and our new  "TotalProcess" variable reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable.
+
+```{r eval=FALSE}
+app_wide = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
+  arrange(taskId) %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime)
+
+app_wide$TotalProcess = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + app_wide$Tiling
+
+app_wide$diff = app_wide$TotalProcess - app_wide$TotalRender
+```
+
+We can then confirm that the difference between the "TotalRender" and "TotalProcess" variables is equivalent to the runtime of Tiling by calculating the 
+
 In order to view the interaction of the "runtime" variable with variables from other data sets, it would be useful to create a new data set that exclusively contains eventName "TotalRender", thus showing only the total runtime for each rendering task per virtual machine. To further enhance this data set and make it conducive to joining with the "gpu" data later in the analysis, a "task_no" variable will also be added, reflecting the chronological order that each rendering task is performed per virtual machine. These steps are performed using the following code:
 
 ```{r eval = FALSE}
@@ -318,16 +333,72 @@ We can therefore join both data sets simply using the "taskId" variable with the
 all_data = left_join(gpu_app_data,task_data[c("taskId","x","y","level")],by = c("taskId"))
 ```
 
-This
 
 
 ## Modelling
 
+
+```{r include=FALSE}
+source("src/dominant-events.R")
+```
+
+
 Create several graphs to view different interactions of data set
 
-Which event types dominate task runtimes? (app checkpoints)
+## Which event types dominate task runtimes?
 
-What is the interplay between GPU temperature and performance? (gpu)
+Before comparing the runtimes of the different events in the app_wide data, it is important to examine the distribution of the runtimes for each event individually to evaluate how best to compare them. 
+
+```{r echo=FALSE}
+grid.arrange(tiling_runtime_hist,uploading_runtime_hist,saving_runtime_hist,render_runtime_hist,ncol = 2,nrow =2)
+```
+
+From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To establish whether we should include these values in our analysis, we can explore to see if they are an error or representative of a element of the rendering process. One avenue of investigation we could take would be to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames where this occurred more than twice. 
+
+```{r}
+length(app_wide[app_wide$eventName == "Uploading" & app_wide$runtime >10,]$hostname)
+
+length(unique(app_wide[app_wide$eventName == "Uploading" & app_wide$runtime >10,]$hostname))
+
+app_wide %>%
+  filter(eventName == "Uploading" & runtime > 10) %>%
+  count(hostname) %>%
+  filter(n>2)
+
+```
+
+This indicates that there were 1079 observations in the data where the eventName was "Uploading" and the runtime was longer than 10 seconds. Of these observations, they occurred on 793 different virtual machines where the maximum number of repeated occurrences on the same virtual machine was 3 - which happened on 7 different virtual machines. With these observations, it is unlikely that the high runtimes for the "Uploading" task are caused by a faulty or under-performing virtual machine. An additional route we can investigate is if there are some particular attributes of the pixels that are being rendered that are conducive to a high upload time. We can display the pixels with high runtimes for the "Uploading" task with the following code. First we filter the app_wide data to preserve only "Uploading" events with a runtime greater than 10 seconds, then we join this with "task.x.y" using the "taskId" variable as the primary key,
+
+```{r eval=FALSE}
+high_uploading_runtime = filter(app_wide,runtime>10 & eventName == "Uploading") %>%
+  left_join(task.x.y,by = c("taskId"))
+```
+
+Now, we can visualise the pixel locations with a high runtime for the "Uploading" task.
+
+```{r echo=FALSE}
+uploading_runtime_plot
+```
+
+Evidently, the majority of these pixels are located where the y co-ordinate is approximately less than 25. These are also the pixels that are rendered at the beginning of the overall terapixel image rendering process, which can be shown by plotting the runtime of the "Uploading" event against the time at which the event commences.
+
+```{r echo=FALSE}
+grid.arrange(task_no_uploading,ncol =2)
+```
+
+From this we can surmise that there are some inefficiencies at the beginning of the terapixel rendering process that stem from the "Uploading" task taking upwards of 20 times longer than it does for the remainder of the process. 
+
+First of all, we can use the app_wide data prepared in the previous section to examine the runtimes of different events. The below histogram shows the average runtime for each event in the app_wide data.
+
+```{r echo=FALSE}
+event_runtime_plot
+```
+
+Clearly, the rendering event dominates the overall process, followed by "Uploading", then "Tiling" and finally "Saving Config" takes very little time.
+
+SHOW DISTRIBUTION OF RUNTIME FOR EACH EVENT NAME, HIGHLIGHT AND INVESTIGATE OUTLIERS IN 
+
+## What is the interplay between GPU temperature and performance? (gpu)
 
 What is the interplay between increased power draw and render time?
 -- Can we quantify the variation in computation requirements for particular tiles?

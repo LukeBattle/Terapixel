@@ -24,18 +24,30 @@ cache('app_data')
 
 app_wide = app_data %>%
   pivot_wider(names_from = eventType,
-              values_from = timestamp)
+              values_from = timestamp) %>%
+  arrange(hostname,START)
 
 #create runtime variable by calculating time difference from start to stop timestamp
 
-app_wide$runtime = app_wide$STOP - app_wide$START
+app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
+
+#use calculated runtimes to recalculate incorrect TotalRender task runtime
+
+app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime)
+
+app_wide$TotalRender = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + app_wide$Tiling
+
+app_wide = app_wide %>%
+  pivot_longer(c("Render","Uploading","Saving Config","TotalRender","Tiling"),names_to = "eventName", values_to = "runtime" )
+
 
 cache('app_wide')
 
 #create dataset with just totalrender events
 
-totalrender_data = filter(app_wide,eventName == "TotalRender") %>%
-  arrange(hostname,START)
+totalrender_data = filter(app_wide,eventName == "TotalRender")
 
 unique_app_hostname = unique(totalrender_data$hostname)
 
@@ -47,7 +59,24 @@ totalrender_data$task_no = task_no_per_host
 
 cache('totalrender_data')
 
+event_plot_data = app_wide %>%
+  group_by(eventName) %>%
+  summarise(runtime = mean(as.numeric(runtime))) %>%
+  arrange(runtime)
 
+cache('event_plot_data')
 
+event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
+  arrange(taskId) %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime)
 
+event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + event_data$Tiling
 
+event_data$diff = event_data$totalprocess - event_data$TotalRender
+
+mean(event_data$Tiling - event_data$diff)
+
+mean(event_data$tilingdiff)
+
+head(event_data)
