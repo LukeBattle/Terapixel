@@ -11,6 +11,17 @@ calculate_corr = function(hostn,var1,var2) {
 
 hostname_corr = lapply(unique_hostnames,calculate_corr,var1 = "runtime", var2 = "tempC")
 
-(corr_hist = ggplot() + aes(hostname_corr)
-    geom_histogram(bins = 30))
+hostname_corr = unlist(hostname_corr)
+
+(corr_hist = ggplot() + aes(hostname_corr) +
+    geom_histogram())
+
+hostname_corr_power = lapply(unique_hostnames,calculate_corr,var1 = "runtime", var2 = "powerDraw")
+
+hostname_corr_power = unlist(hostname_corr_power)
+
+(power_corr_hist = ggplot() + aes(hostname_corr_power) +
+    geom_histogram())
+
+mean(hostname_corr_power)
 

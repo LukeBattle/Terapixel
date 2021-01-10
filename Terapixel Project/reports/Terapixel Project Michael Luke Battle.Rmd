@@ -214,20 +214,42 @@ app_wide$runtime = app_wide$STOP - app_wide$START
 
 ```
 
-Using "runtime", we can check that the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. A new variable "TotalProcess" is then created which is the summation of the runtimes for events Saving Config, Render, Tiling and uploading. Creating a new variable to observe the difference between the original "TotalRender" variable and our new  "TotalProcess" variable reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable.
+Using "runtime", we can check that the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. We will do this in a different data set called "event_data" to preserve the data pipeline which app_wide is integral to. A new variable "TotalProcess" is then created which is the summation of the runtimes for events Saving Config, Render, Tiling and uploading. Creating a new variable to observe the difference between the original "TotalRender" variable and our new  "TotalProcess" variable reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable.
 
 ```{r eval=FALSE}
-app_wide = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
+event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
   arrange(taskId) %>%
   pivot_wider(names_from = eventName,
               values_from = runtime)
 
-app_wide$TotalProcess = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + app_wide$Tiling
+event_data$totalprocess = event_data$Render + event_data$Uploading + 
+  event_data$`Saving Config` + event_data$Tiling
 
-app_wide$diff = app_wide$TotalProcess - app_wide$TotalRender
+event_data$diff = event_data$totalprocess - event_data$TotalRender
 ```
 
-We can then confirm that the difference between the "TotalRender" and "TotalProcess" variables is equivalent to the runtime of Tiling by calculating the 
+We can then confirm that the difference between the "TotalRender" and "TotalProcess" variables is almost identical to the runtime of "Tiling" with the below calculation.
+
+```{r}
+sum(as.numeric(event_data$diff))/sum(as.numeric(event_data$Tiling))
+```
+
+Therefore, we will apply the above transformations to the app_wide data in order to change the "TotalRender" event to reflect the true summation of runtimes. Once these have been applied, the data is converted back to long format with variable "eventName" whilst variables "START" and "STOP" are removed as they are not accurate for eventName "TotalRender". These steps are performed in the below code.
+
+```{r eval=FALSE}
+app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime)
+
+app_wide$TotalRender = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + 
+  app_wide$Tiling
+
+app_wide = app_wide %>%
+  pivot_longer(c("Render","Uploading","Saving Config","TotalRender","Tiling"),
+               names_to = "eventName", values_to = "runtime" )
+
+```
+
 
 In order to view the interaction of the "runtime" variable with variables from other data sets, it would be useful to create a new data set that exclusively contains eventName "TotalRender", thus showing only the total runtime for each rendering task per virtual machine. To further enhance this data set and make it conducive to joining with the "gpu" data later in the analysis, a "task_no" variable will also be added, reflecting the chronological order that each rendering task is performed per virtual machine. These steps are performed using the following code:
 

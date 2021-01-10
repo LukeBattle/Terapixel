@@ -71,12 +71,10 @@ event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>%
   pivot_wider(names_from = eventName,
               values_from = runtime)
 
-event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + event_data$Tiling
+event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + 
+  event_data$Tiling
 
 event_data$diff = event_data$totalprocess - event_data$TotalRender
 
-mean(event_data$Tiling - event_data$diff)
+cache('event_data')
 
-mean(event_data$tilingdiff)
-
-head(event_data)
