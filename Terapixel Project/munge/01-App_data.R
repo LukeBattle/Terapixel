@@ -31,6 +31,20 @@ app_wide = app_data %>%
 
 app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
 
+#create event_data to check TotalRender eventName
+
+event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
+  arrange(taskId) %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime)
+
+event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + 
+  event_data$Tiling
+
+event_data$diff = event_data$totalprocess - event_data$TotalRender
+
+cache('event_data')
+
 #use calculated runtimes to recalculate incorrect TotalRender task runtime
 
 app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
@@ -66,15 +80,5 @@ event_plot_data = app_wide %>%
 
 cache('event_plot_data')
 
-event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
-  arrange(taskId) %>%
-  pivot_wider(names_from = eventName,
-              values_from = runtime)
 
-event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + 
-  event_data$Tiling
-
-event_data$diff = event_data$totalprocess - event_data$TotalRender
-
-cache('event_data')
 

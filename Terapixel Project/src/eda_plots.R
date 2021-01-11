@@ -1,7 +1,7 @@
 # assess gpu dataset quantitative values
 
 gputemp_plot  = ggplot(data = gpu_data, aes(x = gpuTempC)) +  
-  geom_histogram() +
+  geom_histogram(bins =30) +
   labs(
     x = "gpuTempC",
     y = "Freq",
@@ -10,7 +10,7 @@ gputemp_plot  = ggplot(data = gpu_data, aes(x = gpuTempC)) +
 
 
 gpupowerdraw_plot  = ggplot(data = gpu_data, aes(x = powerDrawWatt)) +  
-  geom_histogram() +
+  geom_histogram(bins=30) +
   labs(
     x = "gpuTempC",
     y = "Freq",
@@ -19,7 +19,7 @@ gpupowerdraw_plot  = ggplot(data = gpu_data, aes(x = powerDrawWatt)) +
 
 
 gpumemutil_plot  = ggplot(data = gpu_data, aes(x = gpuMemUtilPerc)) +  
-  geom_histogram() +
+  geom_histogram(bins = 30) +
   labs(
     x = "gpuTempC",
     y = "Freq",
@@ -28,7 +28,7 @@ gpumemutil_plot  = ggplot(data = gpu_data, aes(x = gpuMemUtilPerc)) +
 
 
 gpuutil_plot  = ggplot(data = gpu_data, aes(x = gpuUtilPerc)) +  
-  geom_histogram() +
+  geom_histogram(bins =30) +
   labs(
     x = "gpuUtilPerc",
     y = "Freq",

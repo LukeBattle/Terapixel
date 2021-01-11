@@ -122,21 +122,6 @@ mean(filter(gpu_task_app_data,level==12)$runtime)
 
 #create plot of runtime vs pixel
 
-(task_runtime_plot  = ggplot(data = filter(all_data,level == 12), aes(x = y, y = (-1*x), color = as.numeric(runtime))) +
-    geom_point() +
-    labs(
-      x = "x",
-      y = "y",
-      title = ""
-    ))
-
-(task_runtime_plot  = ggplot(data = filter(all_data,level == 12), aes(x = y, y = (-1*x), color = MemUtilPerc)) +
-    geom_point() +
-    labs(
-      x = "x",
-      y = "y",
-      title = ""
-    ))
 
 dim(unique(app_task_data[c("x","y")]))
 

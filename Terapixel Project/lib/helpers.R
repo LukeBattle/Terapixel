@@ -43,3 +43,9 @@ assign_tr_task = function(hostn) {
   return(1:host_no)
 }
 
+#calculate correlation coefficient between two variables (set as arguments) for chosen virtual machine
+calculate_corr = function(hostn,var1,var2, task_number = 0) {
+  filt_data = filter(all_data,hostname == hostn & task_no > task_number)
+  return(cor(filt_data[c(var1)],filt_data[c(var2)]))
+}
+

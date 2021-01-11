@@ -24,6 +24,8 @@ cache('gpu_data')
 
 unique_hostnames = unique(gpu_data$hostname)
 
+cache('unique_hostnames')
+
 task_no_gpu = lapply(unique_hostnames,assign_task_no)
 
 task_no_gpu = unlist(task_no_gpu)
