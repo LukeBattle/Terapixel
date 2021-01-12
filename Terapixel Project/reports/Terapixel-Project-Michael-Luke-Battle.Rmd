@@ -478,11 +478,11 @@ source("src/tile_variation.R")
 
 Using "all_data" we can plot the tile co-ordinates and visualise the variation in computation requirements. Below depicts the variation in "runtime" for each tile.
 
-```{r}
+```{r echo=FALSE}
 tile_runtime_plot
 ```
 
-```{r}
+```{r echo=FALSE}
 tile_mem_plot
 ```
 
@@ -493,11 +493,54 @@ knitr::include_graphics("images/full_terapixel_image.png")
 ```
 
 
-
-
 ### Can we identify particular GPU cards (based on their serial numbers) whose performance differs to other cards? (i.e. perpetually slow cards).
 
+To identify GPU cards with distinct performance properties, we can summarise "all_data" by taking averages of each performance metric per virtual machine. However. it is worth recalling that the first two tasks performed on the majority of virtual machines exhibit behavior that is not representative of the GPU card performance in the remainder of the total rendering process. Taking this into consideration, we can create two data summaries from "all_data" providing the average performance metrics for each virtual machine. One data set will consider data from all tasks, whilst the second will exclude observations made in the first two tasks performed on each virtual machine. Using both of these data sets, we can identify GPU cards that express unusual properties and  verify that this is the case over all tasks and are not being heavily skewed by abnormalities in the first two.
+
+EXAMINE IMPACT OF REMOVING FIRST TWO TASKS, USE PLOT AND THEN BACK UP WITH AVERAGE DIFFERENCE BETWEEN RUNTIME AVERAGES
+
+THEN INTRODUCE HISTOGRAM DISTRIBUTION
+
+First, we can examine the average time taken to render a single tile for each virtual machine in both scenarios
+
+
 ### What can we learn about the efficiency of the task scheduling process?
+
+From our analysis of the "gpu" data, we found that this data set contains snapshots of each virtual machine every two seconds. This revealed periods between tasks where the GPU card was not being utilised. Whilst we used this previously to assign task numbers to each virtual machine tile rendering process, we can also use it to establish how efficient the task scheduling process is. The more efficiently the tasks or scheduled, the less time will be spent on the virtual machine between tasks, therefore we can investigate this by finding the proportion of observations where the gpuMemUtil and gpuUtilPerc variables are equal to 0 (indicating that a task is not running) from the beginning of the first task to the end of the final one. To do this, we can use the below function:
+
+```{r eval = FALSE}
+waiting_time_perc = function(hostn) {
+  filt_data = filter(gpu_data,hostname == hostn & task_no != 0)
+  last_task_ref = min(which(filt_data$task_no == max(filt_data$task_no) & filt_data$gpuMemUtilPerc == 0))-1
+  filt_data = slice(filt_data,1:last_task_ref)
+  perc_zero = sum(filt_data$gpuMemUtilPerc == 0 & filt_data$gpuUtilPerc == 0)/dim(filt_data)[1] *100
+  return(perc_zero)
+}
+```
+
+This function returns the percentage of observations where the gpuMemUtil and gpuUtilPerc variables are equal to 0 for a given virtual machine hostname. It does not count any observations taken before the beginning of the first task or after the final task has finished. We can apply this function to all 1024 virtual machines and visualise the distribution of the result.
+
+```{r}
+ggplot() + aes(x=vm_waiting_times) + geom_histogram(bins=30) + 
+  labs(
+    x = "Time Between Tasks (% of Total Time)",
+    y = "Frequency"
+  )
+```
+
+In addition to the distribution, the minimum and maximum percentages of time between tasks for a virtual machine are `r format(round(min(vm_waiting_times),1))` and `r format(round(max(vm_waiting_times),1))`, respectively. The mean average percentage is `r format(round(mean(vm_waiting_times),1))`. So on average, approximately a quarter of the total rendering time for the whole terapixel image is spent by a virtual machine waiting to be assigned the next task. 
+
+The above plot resembles the histogram in the previous section showing the distribution of the average total render time per tile for each virtual machine. We can create a small data set to investigate whether average runtime correlates with average time spent waiting for a task to be assigned to the virtual machine by joining up the data and computing the correlation coefficient with the below code.
+
+```{r}
+vm_wait_data = as.data.frame(cbind("hostname" = unique_hostnames,vm_waiting_times)) %>%
+  left_join(filter(slow_cards,runtime_env == "runtime_exc"),by = c("hostname"))
+
+cor(as.numeric(vm_wait_data$vm_waiting_times),as.numeric(vm_wait_data$avg_runtime))
+```
+
+This indicates that there is a strong negative correlation between the average task runtime and the percentage of the total rendering process spent waiting for a task to be assigned for each virtual machine. Therefore, as the average runtime for a task increases, the time spent waiting for a task to be assigned decreases.
+
 
 ## Evaluation
 
