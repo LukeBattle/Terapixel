@@ -13,8 +13,8 @@
   ) + labs(
     x = "GPU Serial Number",
     y = "Average Runtime (seconds)"
-  )) + guides(colour = FALSE, size = FALSE) + scale_shape_discrete(name = "First 2 tasks included?",
-                                                                   labels = c("No","Yes"))
+  ) + guides(colour = FALSE, size = FALSE) + scale_shape_discrete(name = "First 2 tasks included?",
+                                                                   labels = c("No","Yes")))
 
 
 ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc")), aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
@@ -22,8 +22,16 @@ ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc")), aes(x = as.fact
                        axis.text.x = element_blank(),
                        axis.ticks.x = element_blank())
 
-ggplot(arrange(filter(slow_cards,runtime_env == "runtime_exc"))) + aes(x = avg_runtime) + 
-  geom_histogram(bins = 20)
+ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_runtime) + 
+  geom_histogram(bins = 20) + labs(
+    x = "Average Total Render Time per Tile per GPU (seconds)",
+    y = "Frequency"
+  )
+
+
+
+mean(avg_diff$runtime_diff)
+
 
 
 

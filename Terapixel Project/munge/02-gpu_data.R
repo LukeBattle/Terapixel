@@ -82,6 +82,14 @@ slow_cards = as.data.frame(cbind("gpuSerial" = gpu_card_summary_exc_first_tasks$
 
 cache('slow_cards')
 
+avg_diff = slow_cards %>%
+  pivot_wider(names_from = runtime_env,
+              values_from = avg_runtime) %>%
+  mutate(runtime_diff = runtime_inc - runtime_exc) %>%
+  select(runtime_diff)
+
+cache('avg_diff')
+
 vm_waiting_times = lapply(unique_hostnames,waiting_time_perc)
 
 vm_waiting_times = unlist(vm_waiting_times)

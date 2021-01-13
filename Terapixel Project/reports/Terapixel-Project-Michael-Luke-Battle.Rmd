@@ -495,13 +495,32 @@ knitr::include_graphics("images/full_terapixel_image.png")
 
 ### Can we identify particular GPU cards (based on their serial numbers) whose performance differs to other cards? (i.e. perpetually slow cards).
 
+```{r include=FALSE}
+source("src/gpu_analysis.R")
+```
+
+
 To identify GPU cards with distinct performance properties, we can summarise "all_data" by taking averages of each performance metric per virtual machine. However. it is worth recalling that the first two tasks performed on the majority of virtual machines exhibit behavior that is not representative of the GPU card performance in the remainder of the total rendering process. Taking this into consideration, we can create two data summaries from "all_data" providing the average performance metrics for each virtual machine. One data set will consider data from all tasks, whilst the second will exclude observations made in the first two tasks performed on each virtual machine. Using both of these data sets, we can identify GPU cards that express unusual properties and  verify that this is the case over all tasks and are not being heavily skewed by abnormalities in the first two.
 
-EXAMINE IMPACT OF REMOVING FIRST TWO TASKS, USE PLOT AND THEN BACK UP WITH AVERAGE DIFFERENCE BETWEEN RUNTIME AVERAGES
+The below plot depicts 15 different GPU cards with the highest average render time per tile. Moreover, it shows two averages, one calculated including the first two task observations and one without. 
 
-THEN INTRODUCE HISTOGRAM DISTRIBUTION
+```{r echo=FALSE}
+slow_card_inc_plot
+```
 
-First, we can examine the average time taken to render a single tile for each virtual machine in both scenarios
+We can observe that for the majority of the GPU cards, the average total render time per tile increases with the inclusion of the first two tasks, however it is not a significant increase. Additionally, while the inclusion slightly alters the order of the 15 GPU cards with the highest average total render time per tile, it does not substantially change it and the slowest 15 GPU cards remain the slowest GPU cards regardless. The average increase when including observations from the first two tasks across all GPU cards is `r format(round(mean(avg_diff$runtime_diff),2))` so it does skew the averages slightly but not enough to cause a significant alteration in the data. 
+
+We can now observe the distribution of the average total render time per tile for each GPU, calculated including the observations for the first two tasks.
+
+```{r echo=FALSE}
+ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_runtime) + 
+  geom_histogram(bins = 20) + labs(
+    x = "Average Total Render Time per Tile per GPU (seconds)",
+    y = "Frequency"
+  )
+```
+
+It is clear in the above plot that there are two main groups of GPU cards that differ in performance. One group with an average render time per tile of approximately 46 seconds, and the other with 42 seconds.
 
 
 ### What can we learn about the efficiency of the task scheduling process?
