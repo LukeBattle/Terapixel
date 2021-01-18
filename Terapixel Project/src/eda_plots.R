@@ -3,36 +3,36 @@
 gputemp_plot  = ggplot(data = gpu_data, aes(x = gpuTempC)) +  
   geom_histogram(bins =30) +
   labs(
-    x = "gpuTempC",
-    y = "Freq",
-    title = "Event Name vs Runtime (Seconds)"
+    x = "Temperature (celsius)",
+    y = "Frequency",
+    title = "Temperature Distribution "
   )
 
 
 gpupowerdraw_plot  = ggplot(data = gpu_data, aes(x = powerDrawWatt)) +  
   geom_histogram(bins=30) +
   labs(
-    x = "gpuTempC",
-    y = "Freq",
-    title = "Event Name vs Runtime (Seconds)"
+    x = "Power Draw (watts)",
+    y = "Frequency",
+    title = "Power Draw Distribution"
   )
 
 
 gpumemutil_plot  = ggplot(data = gpu_data, aes(x = gpuMemUtilPerc)) +  
   geom_histogram(bins = 30) +
   labs(
-    x = "gpuTempC",
-    y = "Freq",
-    title = "Event Name vs Runtime (Seconds)"
+    x = "% RAM Used",
+    y = "Frequency",
+    title = "% Memory Utilised Distribution"
   )
 
 
 gpuutil_plot  = ggplot(data = gpu_data, aes(x = gpuUtilPerc)) +  
   geom_histogram(bins =30) +
   labs(
-    x = "gpuUtilPerc",
-    y = "Freq",
-    title = ""
+    x = "% GPU Core Used",
+    y = "Frequency",
+    title = "% GPU Core Used Distribution"
   )
 
 

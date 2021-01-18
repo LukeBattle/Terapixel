@@ -75,7 +75,7 @@ source("src/eda_plots.R")
 
 Describe Data
 
-In order to evaluate the rendering process, Newcastle University has provided three files detailing various aspects of a single run of the rendering process. The file "application.checkpoints.csv" has dimensions and variable names:
+In order to evaluate the rendering process, Newcastle University has provided three files detailing various aspects of a single entire run of the rendering process. The file "application.checkpoints.csv" has dimensions and variable names and values all of class character:
 
 ```{r}
 dim(application.checkpoints)
@@ -89,7 +89,7 @@ unique(application.checkpoints$eventName)
 ```
 In which "TotalRender" is a combination of all other events, which represent different parts of the whole rendering process. In addition to "eventType" and "eventName", "timestamp" gives the time associated with this event starting or stopping, "hostname" is the hostname of the virtual machine auto-assigned by the Azure batch system and "jobId" and "taskId" are the unique IDs of the Azure batch job and task, respectively.
 
-The file "gpu.csv" has the following dimensions and variable names, with all variable values being of class character:
+The file "gpu.csv" has the following dimensions and variable names:
 
 ```{r}
 dim(gpu)
@@ -97,7 +97,7 @@ colnames(gpu)
 str(gpu)
 ```
 
-The variable names "timestamp" and "hostname" have the same meaning as in "application.checkpoints.csv". "gpuSerial" and "gpuUUID" are the serial number and unique ID of the physical GPU card, which represent a one-to-one match the "hostname" variable. As there are 1024 gpu cores, there are 1024 different values for "hostname", "gpuSerial" and "gpuUUID". 
+The variable names "timestamp" and "hostname" have the same meaning as in "application.checkpoints.csv". "gpuSerial" and "gpuUUID" are the serial number and unique ID of the physical GPU card, which represent a one-to-one match the "hostname" variable. As there are 1024 gpu cores in the cloud supercomputer, there are 1024 different values for "hostname", "gpuSerial" and "gpuUUID". 
 
 ```{r}
 length(unique(gpu$hostname))
@@ -107,7 +107,7 @@ length(unique(gpu$gpuUUID))
 dim(unique(gpu[c("hostname","gpuSerial","gpuUUID")]))
 ```
 
-The additional variables in this data set are quantitative variables describing different aspects of the cores. These include "powerDrawWatt" (the power draw of the GPU in watts), "gpuTempC" (the temperature of the GPU in Celsius), "gpuUtilPerc" (the percent utilisation of the GPU core) and "gpuMemUtilPerc" (the percent utilisation of the GPU memory).
+Other variables in this data set are quantitative variables detailing various performance metrics of the GPU cores. These include "powerDrawWatt" (the power draw of the GPU in watts), "gpuTempC" (the temperature of the GPU in Celsius), "gpuUtilPerc" (the percent utilisation of the GPU core) and "gpuMemUtilPerc" (the percent utilisation of the GPU memory).
 
 We can also observe that variables "timestamp", "hostname" and "gpuUUID" are of class character, whilst variables "gpuSerial" and "powerDrawWatt" are of class numeric. Lastly, variables "gpuTempC", "gpuUtilPerc" and "gpuMemUtilPerc" are integer values.
 
@@ -123,8 +123,7 @@ colnames(task.x.y)
 
 ```
 
-
-Variables "jobId" and "taskId" are the same as in "application.checkpoints.csv", whilst "x" and "y" represent the location of each tile being rendered. The "Level" variable allows users to zoom into the visualisation. In total there are 12 levels, however only levels 12, 8 and 4 and rendered whilst the other levels are derived in the tiling process. Level 12 is when the the image at maximum zoom, and level 1 is when the image is zoomed right out. The "jobId" relates to the "Level" variable, so in total there are three different "jobId" values corresponding to the three levels that are rendered, as shown below:
+Variables "jobId" and "taskId" are the same as in "application.checkpoints.csv", whilst "x" and "y" represent the location of each tile being rendered. The "Level" variable allows users to zoom into the visualisation. In total there are 12 levels, however only levels 12, 8 and 4 and rendered whilst the other levels are derived in the tiling process. Level 12 is when the the image is at maximum zoom, and level 1 is when the image is fully zoomed out. The "jobId" relates to the "Level" variable, so in total there are three different "jobId" values corresponding to the three levels that are rendered, as shown below:
 
 ```{r}
 unique(task.x.y[c("jobId","level")])
@@ -138,7 +137,7 @@ str(task.x.y)
 
 Data Quality
 
-With the data described at a high level, it is necessary to assess the quality of it. First we can check for any missing values using the below code.
+With the data described at a high level, we can check for any missing values using the below code.
 
 ```{r}
 sum(is.na(application.checkpoints))
@@ -158,7 +157,7 @@ dim(gpu)[1] - dim(unique(gpu))[1]
 dim(task.x.y)[1] - dim(unique(task.x.y))[1]
 ```
 
-We can see that there are 2,470 duplicates in "application.checkpoints.csv", 9 in "gpu.csv" and none in "task.x.y.csv". With no missing data and only a small percentage of the data in duplicate, the data is of good quality with respect to duplicates and missing data.
+We can see that there are 2,470 duplicates in "application.checkpoints.csv", 9 in "gpu.csv" and none in "task.x.y.csv". With no missing data and only a small percentage of duplicate data, the data is of good quality.
 
 Although there is no missing data in the sense of NULL values, "gpu" has a significant population of outliers. We can observe this by plotting histograms for each quantitative variable in the data set. 
 
@@ -200,21 +199,21 @@ app_data = unique(app_data)
 
 ```
 
-With the "timestamp" variable in a more computational-friendly format, we can now derive the runtime for each event. First, the data must be converted from long format to wide format with respect to the eventType variable. Then, the start time of the event can be subtracted from the stop time to calculate the runtime. This is performed with the below code.
+With the "timestamp" variable in a more computation-friendly format, we can now derive the total runtime for each event. First, the data must be converted from long format to wide format with respect to the eventType variable. Note that the data is also arranged by START time, a step that will prove useful in our future data preparation. Then, the start time of the event can be subtracted from the stop time to calculate the runtime in seconds. This is performed with the below code.
 
 ```{r eval = FALSE}
-
 #convert to wide format so that START and STOP are separate columns
 app_wide = app_data %>%
   pivot_wider(names_from = eventType,
-              values_from = timestamp)
+              values_from = timestamp) %>%
+  arrange(hostname,START)
 
 #create runtime variable by calculating time difference from start to stop timestamp
-app_wide$runtime = app_wide$STOP - app_wide$START
+app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
 
 ```
 
-Using "runtime", we can check that the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. We will do this in a different data set called "event_data" to preserve the data pipeline which app_wide is integral to. A new variable "TotalProcess" is then created which is the summation of the runtimes for events Saving Config, Render, Tiling and uploading. Creating a new variable to observe the difference between the original "TotalRender" variable and our new  "TotalProcess" variable reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable.
+Using "runtime", we can check that the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. We will do this in a different data set called "event_data" to preserve the data pipeline which app_wide is integral to. A new variable, "TotalProcess", is then created which is the summation of the runtimes for events Saving Config, Render, Tiling and Uploading. Creating a new variable, "diff", to observe the difference between the original "TotalRender" variable and"TotalProcess", reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable.
 
 ```{r eval=FALSE}
 event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
@@ -254,8 +253,7 @@ app_wide = app_wide %>%
 In order to view the interaction of the "runtime" variable with variables from other data sets, it would be useful to create a new data set that exclusively contains eventName "TotalRender", thus showing only the total runtime for each rendering task per virtual machine. To further enhance this data set and make it conducive to joining with the "gpu" data later in the analysis, a "task_no" variable will also be added, reflecting the chronological order that each rendering task is performed per virtual machine. These steps are performed using the following code:
 
 ```{r eval = FALSE}
-totalrender_data = filter(app_wide,eventName == "TotalRender") %>%
-  arrange(hostname,START)
+totalrender_data = filter(app_wide,eventName == "TotalRender")
 
 unique_app_hostname = unique(totalrender_data$hostname)
 
@@ -266,7 +264,7 @@ task_no_per_host = unlist(task_no_per_host)
 totalrender_data$task_no = task_no_per_host
 ```
 
-In the above code, the totalrender_data is created by filtering app_wide where eventName is equal to "TotalRender", and then the data is arranged by the virtual machine hostname and the time that the task was started. A vector of all unique hostnames in the resulting data is created, which is then used as the basis of an operation to number each individual task per hostname, resulting in a list of lists that is unpacked and appended to the data. The code for function "assign_tr_task" is given below.
+In the above code, the totalrender_data is created by filtering app_wide where eventName is equal to "TotalRender". In the earlier data preparation of "app_wide", the data was arranged by the "START" and "hostname" variables, so the data in the totalrender_data will still be in this order. A vector of all unique hostnames in the resulting data is created, which is then used as the basis of an operation to number each individual task per hostname, resulting in a list of lists that is unpacked and appended to the data. The code for function "assign_tr_task" is given below.
 
 ```{r eval = FALSE}
 #returns task_no when totalrender_data is ordered for each virtual machine task
@@ -276,15 +274,18 @@ assign_tr_task = function(hostn) {
 }
 ```
 
-There are several issues with the data in "gpu" that we must address. Firstly, the values in the "timestamp" variable are in the same class and format as in the raw "application.checkpoints" file. As previously with "application.checkpoints", we take the same steps to transform this into a more meaningful and computationally compatible variable. We should also remove the duplicates from the data. With the "timestamp" values now of class POSIXct and duplicates removed, we can turn out attention to the outliers in the data. Whether these outliers should be retained in the data or not is dependent upon if they are meaningful or an error. We can now arrange gpu by the newly transformed variable "timestamp" and "hostname". The resulting data provides several new insights about the "gpu" data. Firstly, it shows that the "gpu" data is a series of a snapshot measurements for each virtual machine taken every 2 seconds. Secondly, it indicates that the 0 values in "gpu" are related to the periods on the virtual machine in between tasks. This can be best depicted using a plot of gpuMemUtilPerc vs Time.
+There are several issues with the data in "gpu" that we must address. Firstly, the values in the "timestamp" variable are in the same class and format as in the raw "application.checkpoints" file. As previously with "application.checkpoints", we take the same steps to transform this into a more meaningful and computationally compatible variable. We should also remove the duplicates from the data. With the "timestamp" values now of class POSIXct and duplicates removed, we can turn out attention to the outliers in the data. Whether these outliers should be retained in the data or not is dependent upon if they are meaningful or an error. We can now arrange gpu by the newly transformed variable "timestamp" and "hostname". The resulting data provides several new insights about the "gpu" data. Firstly, it shows that the "gpu" data is a series of a snapshot measurements for each virtual machine taken every 2 seconds.
+
+Secondly, it indicates that the observations where gpuMemUtilPerc have a value of 0 are related to the periods on the virtual machine in between tasks. This can be best depicted using a plot of gpuMemUtilPerc vs Time on a single virtual machine.
 
 ```{r echo=FALSE}
 zero_plot
 ```
 
-In the above plot it is evident that the peaks correspond to when a task is performed on the virtual machine and computer memory is being used. For analysis on the GPU measurements whilst a task is being performed, clearly any observations with a value of 0 for the gpuMemUtilPerc and gpuUtilPerc variables should be removed. However, for an investigation into the efficiency of the task scheduling process we can use these observations to calculate the amount of time the virtual machine spends in between tasks, as well as other performance metrics of these periods.
+In the above plot it is evident that the peaks correspond to when a task is performed on the virtual machine and computer memory is being used. For analysis on the GPU measurements whilst a task is being performed, clearly any observations with a value of 0 for the gpuMemUtilPerc and gpuUtilPerc variables should be removed. However, for an investigation into the efficiency of the task scheduling process we can use these observations to calculate the amount of time the virtual machine spends in between tasks, as well as other performance metrics from these periods.
 
-First, we can prepare the data that will be used in conjunction with "totalrender_data" and "task.x.y" to evaluate the task rendering performance across various metrics. In order to join these data sets for the analysis we will create the variable "task_no" that will assign a task number to each observation within a single peak in our plot above such that the number of unique task numbers corresponds to the number of peaks for each virtual machine. This is performed for each unique hostname using the custom function "assign_task_no", that identifies a new task, or peak, when several criteria have been satisfied. These are if the previous two values in gpuMemUtilPerc are 0 and both the gpuMemUtilPerc and gpuUtilPerc values in the current row are non-zero. Once the "task_no" variable has been added to the data, we create a new data set called "gpu_summary" that groups the data by the hostname and task_no, then summarises by the mean of the different quantitative variables in the data.
+In order to evaluate the task rendering performance across various metrics, we need to combine the data from all three data sets. To facilitate this, we will create the variable "task_no" in "gpu_data" that will assign a task number to each observation within a single peak in our plot above, such that the number of unique task numbers corresponds to the number of peaks for each virtual machine. This is performed for each unique hostname using the custom function "assign_task_no", that identifies a new task, or peak, when several criteria have been satisfied. These are if the previous two values in gpuMemUtilPerc are 0 and both the gpuMemUtilPerc and gpuUtilPerc values in the current row are non-zero. Once the "task_no" variable has been added to the data, we create a new data set called "gpu_summary" that groups the data by the hostname and task_no, then summarises by the arithmetic mean of the different quantitative variables in the data per hostname per task number.
+
 
 ```{r eval=FALSE}
 
@@ -305,7 +306,7 @@ gpu_summary = gpu_data[gpu_data$gpuMemUtilPerc!=0,] %>%
 ```
 
 
-As the task.x.y data set contains no duplicates or missing values, there is no need for any cleaning of this data.
+As the task.x.y data set contains no duplicates or missing values, there is no need to clean any of this data.
 
 Integrate Data
 
@@ -325,14 +326,11 @@ sum(totalrender_data$hostname == gpu_summary$hostname) == length(gpu_summary$hos
 sum(totalrender_data$task_no == gpu_summary$task_no) == length(gpu_summary$hostname)
 ```
 
-So we can join these data sets via these variables using the following code.
-
+So the hostnames and task numbers for both data sets are an exact match, and we can join them via these variables using the following code.
 
 ```{r eval=FALSE}
 gpu_app_data = left_join(totalrender_data,gpu_summary, by = c("hostname","task_no")
 ```
-
-
 
 Next, we can assign the metrics from "gpu_app_data" to each tile in the terapixel image by combining the data from "gpu_app_data" and "task.x.y". We can confirm that the variable "taskId" in "gpu_app_data" is both a primary key in this data set as well as a foreign key for "task.x.y".
 
@@ -355,6 +353,7 @@ We can therefore join both data sets simply using the "taskId" variable with the
 all_data = left_join(gpu_app_data,task_data[c("taskId","x","y","level")],by = c("taskId"))
 ```
 
+With all data sets combined, we can begin analysis of the whole rendering process.
 
 ## Modelling
 
@@ -364,8 +363,6 @@ source("src/dominant-events.R")
 ```
 
 
-Create several graphs to view different interactions of data set
-
 ## Which event types dominate task runtimes?
 
 Before comparing the runtimes of the different events in the app_wide data, it is important to examine the distribution of the runtimes for each event individually to evaluate how best to compare them. 
@@ -374,7 +371,7 @@ Before comparing the runtimes of the different events in the app_wide data, it i
 grid.arrange(tiling_runtime_hist,uploading_runtime_hist,saving_runtime_hist,render_runtime_hist,ncol = 2,nrow =2)
 ```
 
-From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To establish whether we should include these values in our analysis, we can explore to see if they are an error or representative of a element of the rendering process. One avenue of investigation we could take would be to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames where this occurred more than twice. 
+From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To gain a deeper understanding of the data, it would be helpful to investigate what could be causing these disproportionately high runtimes. One possible avenue of investigation is to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames with more than two occurances. 
 
 ```{r}
 length(app_wide[app_wide$eventName == "Uploading" & app_wide$runtime >10,]$hostname)
@@ -388,7 +385,7 @@ app_wide %>%
 
 ```
 
-This indicates that there were 1079 observations in the data where the eventName was "Uploading" and the runtime was longer than 10 seconds. Of these observations, they occurred on 793 different virtual machines where the maximum number of repeated occurrences on the same virtual machine was 3 - which happened on 7 different virtual machines. With these observations, it is unlikely that the high runtimes for the "Uploading" task are caused by a faulty or under-performing virtual machine. An additional route we can investigate is if there are some particular attributes of the tiles that are being rendered that are conducive to a high upload time. We can display the tiles with high runtimes for the "Uploading" task with the following code. First we filter the app_wide data to preserve only "Uploading" events with a runtime greater than 10 seconds, then we join this with "task.x.y" using the "taskId" variable as the primary key,
+This indicates that there were 1079 observations in the data with eventName "Uploading" and a runtime longer than 10 seconds. Of these observations, they occurred on 793 different virtual machines where the maximum number of repeated occurrences on the same virtual machine was 3 - which happened on 7 different virtual machines. With these outliers occurring on 77% of all virtual machines, it is unlikely that the high runtimes for the "Uploading" task are caused by a faulty or under-performing virtual machine. An additional route we can investigate is if there are particular attributes of the tiles that are being rendered that are conducive to a high upload time. We can display the tiles with high runtimes for the "Uploading" task with the following code. First we filter the app_wide data to preserve only "Uploading" events with a runtime greater than 10 seconds, then we join this with "task.x.y" using the "taskId" variable as the primary key. 
 
 ```{r eval=FALSE}
 high_uploading_runtime = filter(app_wide,runtime>10 & eventName == "Uploading") %>%
@@ -401,21 +398,28 @@ Now, we can visualise the tile locations with a high runtime for the "Uploading"
 uploading_runtime_plot
 ```
 
-Evidently, the majority of these tiles are located where the y co-ordinate is approximately less than 25. These are also the tiles that are rendered at the beginning of the overall terapixel image rendering process, which can be shown by plotting the runtime of the "Uploading" event against the time at which the event commences.
+We calculate that `r format(round(dim(filter(high_uploading_runtime,y<25))[1]/dim(high_uploading_runtime)[1]*100,2))`% of these tiles are located where the y co-ordinate is approximately less than 25. These are the tiles that are rendered at the beginning of the overall terapixel image rendering process. To evidence this, we can enhance "high_uploading_runtime" with the addition of the corresponding task number for each observation. Once again using the "taskId" as the primary key, we can assign each individual observation a task number using "all_data".
 
-```{r echo=FALSE}
-grid.arrange(task_no_uploading,ncol =2)
+```{r eval=FALSE}
+high_uploading_runtime = filter(app_wide,runtime>10 & eventName == "Uploading") %>%
+  left_join(task.x.y,by = c("taskId")) %>%
+  left_join(all_data[c("taskId","task_no")], by = c("taskId"))
 ```
 
-From this we can surmise that there are some inefficiencies at the beginning of the terapixel rendering process that stem from the "Uploading" task taking upwards of 20 times longer than it does for the remainder of the process. 
+Now, by plotting the distribution of the "task_no" we can see that it is heavily dominated by tasks 1 and 2. Indeed, tasks 1 and 2 constitute `r format(round(dim(filter(high_uploading_runtime,task_no<3))[1]/dim(high_uploading_runtime)[1]*100,2))`% of the total outlier data. From both the previous plot and the below, it is clear that the remaining outliers not in tasks 1 and 2 are varied both in terms of the task number and tile in which they occur. As these account for only `r format(round(dim(filter(high_uploading_runtime,task_no>2))[1]/65793*100,2))`% of the total tasks, they will not be investigated further in this analysis.
 
-First of all, we can use the app_wide data prepared in the previous section to examine the runtimes of different events. The below histogram shows the average runtime for each event in the app_wide data.
+```{r echo=FALSE}
+task_no_uploading
+```
+
+From this we can surmise that there are inefficiencies at the beginning of the terapixel rendering process that stem from the "Uploading" task runtime being 20 times longer than it is during the remainder of the total process. This is an important point to consider when comparing the runtimes for different events, as the arithmetic mean runtime for the "Uploading" event will be skewed due to the outliers primarily located in tasks 1 and 2. Due to the median being far more robust against outliers, it would be a more appropriate metric in comparing the central tendency of each event runtime. The median will also reflect a runtime more representative of the "Uploading" event in the majority of tasks. The below bar chart depicts the median task runtime for each event. 
+
 
 ```{r echo=FALSE}
 event_runtime_plot
 ```
 
-Clearly, the rendering event dominates the overall process, followed by "Uploading", then "Tiling" and finally "Saving Config" takes very little time. This plot also depicts how the TotalRender eventName that we created in the previous section is a combination of all event runtimes.
+Clearly, "Render" dominates the overall process. This is followed by "Uploading", which is only `r format(round((event_plot_data[event_plot_data$eventName == "Uploading",]$runtime/event_plot_data[event_plot_data$eventName == "Tiling",]$runtime - 1)*100,2))`% longer than "Tiling". Finally, "Saving Config" takes almost no time at all. The above plot also depicts how the "TotalRender" eventName that we created in the previous section more accurately reflects the combination of all event runtimes, as previously it would have been approximately a second shorter due to the exclusion of "Tiling".
 
 ### What is the interplay between GPU temperature and runtime performance?
 
@@ -423,26 +427,28 @@ Clearly, the rendering event dominates the overall process, followed by "Uploadi
 source("src/metric_correlations.R")
 ```
 
+As each virtual machine has a different GPU card, an analysis of the relationships between different variables should take this into consideration. For instance, a card that is perpetually cooler than most other cards, may still increase in temperature as task runtime increases, but will do so on a different scale incomparable to other GPU cards. Therefore, a comparison between temperature and runtime performance should only be made per virtual machine.. To examine the correlation between temperature and runtime for each of the 1024 virtual machines used to render the terapixel image, we can calculate the correlation coefficient between both variables for each virtual machine, and visualise the distribution. 
 
-As each virtual machine has its own unique environment due to different GPU card, an analysis of the relationships between different variables should take this into consideration. Therefore, a comparison between temperature and runtime performance should only be made per virtual machine, as contrasting these variables across different GPU cards would not be fair. To examine the correlation between temperature and runtime for each of the 1024 virtual machines used to render the terapixel image, we can calculate the correlation coefficient for each virtual machine, and visualise the distribution. 
-
-```{r}
+```{r echo=FALSE}
 corr_hist
 ```
 
-The above histogram shows a range of correlation coefficients for the virtual machines, ranging from -0.13 to 0.82 with an average correlation coefficient for the whole data of `r format(round(mean(temp_vs_runtime_corr),2))`. A closer look at a plot of temperature vs runtime for the virtual machine with a negative correlation of -0.13 with the "task_no" variable labeling the points, indicates that the results from the first two tasks where the high uploading time discussed earlier in the analysis drives a far higher than average total render time. Additionally, in these tasks the temperature is significantly lower than average, which may due to the GPU heating up in the first few tasks. This plot can be viewed below.
+As the above histogram shows that these correlation coefficients are normally distributed, we may apply parametric techniques in the analysis of them. Moreover, due to each correlation coefficient being calculated from samples of various size, different weights will need to be assigned to them within these calculations. The weighted arithmetic mean of the above distribution is `r format(round(weighted.mean(temp_vs_runtime_corr,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr,as.numeric(vm_weights)),2))`. Whilst these indicate a mostly positive correlation between these variables, the weighted standard deviation shows a large degree of spread and this is echoed by the above distribution, with correlation coefficient values ranging from -0.13 to 0.82. To more closely examine the causes of this variance, we can create at a scatter plot of temperature vs runtime, with the task number labeled, for the virtual machine with a negative correlation of -0.13. Additionally, we can also visualise the average temperature for each task number.
 
-```{r}
+```{r echo=FALSE}
 grid.arrange(weak_temp_corr,temp_vs_task, ncol = 2)
 ```
 
-From the above plot we can observe that by removing the observations from the first two tasks, the plot would resemble a positive correlation as opposed to a negative. We can calculate this updated correlation coefficient with the below code using custom function "calculate_cor".
+
+The above plots indicate that the negative correlation between temperature and runtime for this virtual machine is primarily driven by the first two tasks in the rendering process. As discussed in the previous section of this report, the first two tasks in the total rendering process have disproportionately high uploading times, which consequently gives many of the virtual machines longer than normal total rendering runtimes. This is then compounded by a lower than average temperature for the first 3 tasks in the total rendering process that can be seen for all GPU cards, presumably as they heat up. For the virtual machine above, this gives the impression that as the runtime decreases, the temperature increases, but this is a special case for the first two tasks and not representative of the remainder of the rendering process. To evidence this, we can recalculate the correlation coefficient for the virtual machine, while excluding the observations for the first two tasks. This is performed in the below code using custom function "calculate_corr".
 
 ```{r}
-calculate_corr(unique_hostnames[match(min(temp_vs_runtime_corr),temp_vs_runtime_corr)], "runtime","tempC",task_number = 2)
+calculate_corr(unique_hostnames[match(min(temp_vs_runtime_corr),
+                                      temp_vs_runtime_corr)], 
+               "runtime","tempC",task_number = 2)
 ```
 
-Therefore, with the removal of of the first two tasks in the data, the correlation coefficient has increased dramatically from -0.13 t0 0.34. We can recalculate the average correlation coefficient for all virtual machines in the data without the first two tasks with the following code.
+Therefore, with the removal of of the first two tasks in the data, the correlation coefficient for this virtual machine has increased dramatically from -0.13 t0 0.34. To see if this result is repeated for all virtual machines, We can recalculate the correlation coefficients for all virtual machines in the data without the first two tasks, using the following code:
 
 ```{r}
 temp_vs_runtime_corr2 = lapply(unique_hostnames,calculate_corr,var1 = "runtime", var2 = "tempC", 
@@ -450,10 +456,16 @@ temp_vs_runtime_corr2 = lapply(unique_hostnames,calculate_corr,var1 = "runtime",
 
 temp_vs_runtime_corr2 = unlist(temp_vs_runtime_corr2)
 
-mean(temp_vs_runtime_corr2)
 ```
 
-Therefore, for all tasks from the third onward there is a moderate positive correlation of 0.64 with minimum and maximum values of `r format(round(min(temp_vs_runtime_corr2),2))` and `r format(round(max(temp_vs_runtime_corr2),2))`, respectively. This indicates that the longer a task is ran for, the hotter the GPU becomes.  
+We can now compare the correlation coefficient distributions with the inclusion and exclusion of the first two tasks for all virtual machines.
+
+```{r echo=FALSE}
+grid.arrange(corr_hist,corr_hist2, nrow = 2)
+
+```
+
+Clearly, the correlation coefficients calculated when omitting observations from the first two tasks are significantly more positive. The weighted mean of this distribution is `r format(round(weighted.mean(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))`. This shows the correlation coefficients are far more positive with much less variance, indicating that the first two tasks had a substantial effect in negatively skewing the correlation coefficients in the previous calculations. As the first two tasks only constitute `r format(round(2/mean(as.numeric(vm_weights))*100,2))`% of the average total amount of tasks performed on each virtual machine, we can say for the vast majority of the time there is a moderate positive correlation between temperature and runtime. Therefore, as the runtime of a task increases, so does the temperature of the GPU, and vice versa.
 
 
 ### What is the interplay between increased power draw and render time?
@@ -462,13 +474,13 @@ Therefore, for all tasks from the third onward there is a moderate positive corr
 source("src/power_runtime.R")
 ```
 
-Performing a similar analysis as in the previous section, we can calculate the correlation coefficient of the variables "powerDraw" and "runtime" for each individual virtual machine, still respecting the fact each virtual machine represents a unique environment. As before, we can view the distribution of correlation coefficients for these variables in a histogram.
+We can approach this analysis in the same way as in the previous section, by calculating the correlation coefficient for the power draw and render time for each virtual machine. Performing a similar analysis as in the previous section, we can calculate the correlation coefficient between the variables "powerDraw" and "runtime" for each individual virtual machine, still respecting the fact each virtual machine represents a unique environment. As before, we can view the distribution of correlation coefficients for these variables in a histogram.
 
 ```{r echo=FALSE}
 power_corr_hist
 ```
 
-The above plot shows that for all virtual machines, there exists a positive correlation between the runtime and the power draw of the GPU. The average correlation coefficient is `r format(round(mean(power_vs_runtime_corr)))`, indicating a moderate positive correlation, which varies with minimum and maximum correlation coefficient values of `r format(round(min(power_vs_runtime_corr)))` and `r format(round(max(power_vs_runtime_corr)))` respectively. This indicates that as the runtime of a task increases, so does the amount of power that is used.
+The above plot shows that for all virtual machines, there exists a positive correlation between the runtime and the power draw of the GPU. The median correlation coefficient is `r format(round(median(power_vs_runtime_corr)))`, indicating a moderate positive correlation, which varies with minimum and maximum correlation coefficient values of `r format(round(min(power_vs_runtime_corr)))` and `r format(round(max(power_vs_runtime_corr)))` respectively. This indicates that as the runtime of a task increases, so does the amount of power that is used.
 
 ### Can we quantify the variation in computation requirements for particular tiles?
 

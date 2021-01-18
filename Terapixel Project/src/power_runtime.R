@@ -13,6 +13,10 @@ power_vs_runtime_corr = unlist(power_vs_runtime_corr)
 
 mean(power_vs_runtime_corr)
 
+cor(all_data$powerDraw,all_data$runtime)
+
+
+
 (power_corr = ggplot(filter(all_data,hostname ==unique_hostnames[13]),
                           aes(x = powerDraw, y = runtime)) + geom_point() + geom_text(aes(label = task_no), vjust = 1.2))
 

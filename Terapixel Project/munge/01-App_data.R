@@ -75,7 +75,7 @@ cache('totalrender_data')
 
 event_plot_data = app_wide %>%
   group_by(eventName) %>%
-  summarise(runtime = mean(as.numeric(runtime))) %>%
+  summarise(runtime = median(runtime)) %>%
   arrange(runtime)
 
 cache('event_plot_data')
