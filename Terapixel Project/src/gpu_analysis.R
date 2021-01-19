@@ -17,7 +17,7 @@
                                                                    labels = c("No","Yes")))
 
 
-ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc")), aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
+ggplot(arrange(filter(slow_cards,runtime_env == "runtime_exc")), aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
   geom_point() + theme(axis.title.x=element_blank(),
                        axis.text.x = element_blank(),
                        axis.ticks.x = element_blank())

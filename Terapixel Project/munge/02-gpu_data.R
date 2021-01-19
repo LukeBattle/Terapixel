@@ -74,10 +74,10 @@ cache('gpu_card_summary_exc_first_tasks')
 
 colour_map = 1:1024
 
-slow_cards = as.data.frame(cbind("gpuSerial" = gpu_card_summary_exc_first_tasks$gpuSerial,
-                                 "runtime_exc" = gpu_card_summary_exc_first_tasks$runtime, colour_map)) %>%
-  left_join(gpu_card_summary[c("gpuSerial","runtime","hostname")], by = c("gpuSerial")) %>%
-  rename(runtime_inc = "runtime") %>%
+slow_cards = as.data.frame(cbind("gpuSerial" = gpu_card_summary$gpuSerial,
+                                 "runtime_inc" = gpu_card_summary$runtime, colour_map)) %>%
+  left_join(gpu_card_summary_exc_first_tasks[c("gpuSerial","runtime","hostname")], by = c("gpuSerial")) %>%
+  rename(runtime_exc = "runtime") %>%
   pivot_longer(c("runtime_inc","runtime_exc"), names_to = "runtime_env", values_to = "avg_runtime")
 
 cache('slow_cards')

@@ -4,16 +4,22 @@
     x = "Task Number",
     y = "Power Draw (watts)"
     
-  ))
+  ) + 
+  coord_cartesian(xlim=c(0,10)))
+
+(power_vs_runtime = ggplot(all_data, aes(x = runtime, y = powerDraw)) + 
+    geom_point() + 
+    labs(
+      x = "Runtime (seconds)",
+      y = "Power Draw (watts)"
+      
+    ))
+
 
 power_vs_runtime_corr = lapply(unique_hostnames,calculate_corr,var1 = "runtime", var2 = "powerDraw", 
                                task_number = 0)
 
 power_vs_runtime_corr = unlist(power_vs_runtime_corr)
-
-mean(power_vs_runtime_corr)
-
-cor(all_data$powerDraw,all_data$runtime)
 
 
 
@@ -38,7 +44,22 @@ power_vs_runtime_corr2 = lapply(unique_hostnames,calculate_corr,var1 = "runtime"
 
 power_vs_runtime_corr2 = unlist(power_vs_runtime_corr2)
 
-mean(power_vs_runtime_corr2)
 
 (power_corr_hist = ggplot() + aes(power_vs_runtime_corr) +
-    geom_histogram(bins = 12))
+    geom_histogram(bins = 12) + 
+  coord_cartesian(xlim=c(0,1)) +
+    labs(
+      x = "Correlation Coefficient",
+      y = "Frequency",
+      title = "Distribution of Correlation Coefficients"
+    ))
+
+(power_corr_hist2 = ggplot() + aes(power_vs_runtime_corr2) +
+    geom_histogram(bins = 12) + 
+    coord_cartesian(xlim=c(0,1))+
+    labs(
+      x = "Correlation Coefficient",
+      y = "Frequency",
+      title = "Distribution of Correlation Coefficients Excluding First 2 Tasks"
+    ))
+

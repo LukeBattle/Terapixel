@@ -45,17 +45,16 @@ Background
 
 Maybe include more background information on Newcastle University and data
 
-With world-leading research in data, Newcastle University is always undertaking new challenges to advance the field. In order to keep up with ever-expanding amount of data produced by cities, one such challenge is to be able to effectively convey the information from this data to stakeholders. To address this issue, the University has created a terapixel image of the city of Newcastle upon Tyne, including environmental data such as temperature and humidity, from sensors across the city. This terapixel image contains over one trillion pixels and not only allows the entire city to be viewed, but is rendered at 12 different levels allowing users to zoom in whilst retaining full picture detail. However, rendering over one trillion pixels requires immense computing power, and so the University has made use of public cloud service *Microsoft Azure* to perform the rendering process. This facilitates a far quicker rendering process, which is more suitable for a primary requirement of the project - to ensure the terapixel image supports daily updates.
+With world-leading research in data, Newcastle University is always undertaking new challenges to advance the field. In order to keep up with ever-expanding amount of data produced by cities, one such challenge is to be able to effectively convey the information from this data to stakeholders. To address this issue, the University has created a terapixel image of the city of Newcastle upon Tyne, including environmental data such as temperature and humidity, from sensors across the city. This terapixel image contains over one trillion pixels and not only allows the entire city to be viewed, but is rendered at 12 different levels allowing users to zoom in whilst retaining full picture detail. However, rendering over one trillion pixels requires immense computing power, and so the University has made use of public cloud service *Microsoft Azure* to perform the rendering process. The use of this IaaS service enables two key objectives of the project to be fulfilled. Firstly, it enables the visualisation to be scaled at will by simply adding more nodes to the cloud supercomputer. Within the context of the project, this is important should more data from sensors be added or the Newcastle area depicted in the image require expansion. Secondly, this facilitates a far quicker rendering process, which ensures that the terapixel image can support daily updates. This is an equally vital feature to ensure that sensor data remains up-to-date.
 
 Business Objectives
 
-Whilst Newcastle University has created this terapixel visualisation, it is important that the rendering process with cloud supercomputing is rigorously evaluated in order to identify any inefficiencies.  
+Whilst Newcastle University has created this terapixel visualisation, it is important that the rendering process with cloud supercomputing is rigorously evaluated in order to identify any inefficiencies. The aims of this analysis will be to thoroughly evaluate individual events performed as part of the total rendering process, explore the relationship between different performance metrics, identify GPU cards and tiles with unusual behavior and assess the efficiency of the task scheduling process.
 
 Business Success Criteria
 
 ### Assess Situation
 
-### Determine Data Mining Goals
 
 ### Produce Project Plan
 
@@ -363,7 +362,7 @@ source("src/dominant-events.R")
 ```
 
 
-## Which event types dominate task runtimes?
+### Which event types dominate task runtimes?
 
 Before comparing the runtimes of the different events in the app_wide data, it is important to examine the distribution of the runtimes for each event individually to evaluate how best to compare them. 
 
@@ -427,13 +426,15 @@ Clearly, "Render" dominates the overall process. This is followed by "Uploading"
 source("src/metric_correlations.R")
 ```
 
-As each virtual machine has a different GPU card, an analysis of the relationships between different variables should take this into consideration. For instance, a card that is perpetually cooler than most other cards, may still increase in temperature as task runtime increases, but will do so on a different scale incomparable to other GPU cards. Therefore, a comparison between temperature and runtime performance should only be made per virtual machine.. To examine the correlation between temperature and runtime for each of the 1024 virtual machines used to render the terapixel image, we can calculate the correlation coefficient between both variables for each virtual machine, and visualise the distribution. 
+As each virtual machine has a different GPU card, an analysis of the relationships between different variables should take this into consideration. For instance, a card that is perpetually cooler than most other cards, may still increase in temperature as task runtime increases, but will do so on a different scale incomparable to other GPU cards. Therefore, a comparison between temperature and runtime performance should only be made per virtual machine. To examine the correlation between temperature and runtime for each of the 1024 virtual machines used to render the terapixel image, we can calculate the correlation coefficient between both variables for each virtual machine, and visualise the distribution. 
 
 ```{r echo=FALSE}
 corr_hist
 ```
 
-As the above histogram shows that these correlation coefficients are normally distributed, we may apply parametric techniques in the analysis of them. Moreover, due to each correlation coefficient being calculated from samples of various size, different weights will need to be assigned to them within these calculations. The weighted arithmetic mean of the above distribution is `r format(round(weighted.mean(temp_vs_runtime_corr,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr,as.numeric(vm_weights)),2))`. Whilst these indicate a mostly positive correlation between these variables, the weighted standard deviation shows a large degree of spread and this is echoed by the above distribution, with correlation coefficient values ranging from -0.13 to 0.82. To more closely examine the causes of this variance, we can create at a scatter plot of temperature vs runtime, with the task number labeled, for the virtual machine with a negative correlation of -0.13. Additionally, we can also visualise the average temperature for each task number.
+As the above histogram shows that these correlation coefficients are normally distributed, we may apply parametric techniques in the analysis of them. Moreover, due to each correlation coefficient being calculated from samples of various size, different weights will need to be assigned to them within these calculations. The weighted arithmetic mean of the above distribution is `r format(round(weighted.mean(temp_vs_runtime_corr,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr,as.numeric(vm_weights)),2))`. Whilst these indicate a mostly positive correlation between these variables, the weighted standard deviation shows a large degree of spread and this is echoed by the above distribution, with correlation coefficient values ranging from -0.13 to 0.82. The above histogram also supports our approach of assessing this relationship per virtual machine, as the correlation coefficient taken of both variables over the whole data set is `r format(round(cor(all_data$runtime,all_data$tempC),2))`, which is clearly not representative of the distribution shown above.
+
+To more closely examine the causes of this variance, we can create at a scatter plot of temperature vs runtime, with the task number labeled, for the virtual machine with a negative correlation of -0.13. Additionally, we can also visualise the average temperature for each task number.
 
 ```{r echo=FALSE}
 grid.arrange(weak_temp_corr,temp_vs_task, ncol = 2)
@@ -465,7 +466,7 @@ grid.arrange(corr_hist,corr_hist2, nrow = 2)
 
 ```
 
-Clearly, the correlation coefficients calculated when omitting observations from the first two tasks are significantly more positive. The weighted mean of this distribution is `r format(round(weighted.mean(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))`. This shows the correlation coefficients are far more positive with much less variance, indicating that the first two tasks had a substantial effect in negatively skewing the correlation coefficients in the previous calculations. As the first two tasks only constitute `r format(round(2/mean(as.numeric(vm_weights))*100,2))`% of the average total amount of tasks performed on each virtual machine, we can say for the vast majority of the time there is a moderate positive correlation between temperature and runtime. Therefore, as the runtime of a task increases, so does the temperature of the GPU, and vice versa.
+Clearly, the correlation coefficients calculated when omitting observations from the first two tasks are significantly more positive. The weighted mean of this distribution is `r format(round(weighted.mean(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))` with a weighted standard deviation of `r format(round(weighted.sd(temp_vs_runtime_corr2,as.numeric(vm_weights)),2))`. This shows the correlation coefficients are far more positive with much less variance, indicating that the first two tasks had a substantial effect in negatively skewing the correlation coefficients in the previous calculations. As the first two tasks only constitute `r format(round(2/mean(as.numeric(vm_weights))*100,2))`% of the average total amount of tasks performed on each virtual machine, we can say for the vast majority of the time there is a moderate positive correlation between temperature and runtime. This suggests that as the runtime of a task increases, so will the temperature of the GPU, and vice versa.
 
 
 ### What is the interplay between increased power draw and render time?
@@ -474,13 +475,17 @@ Clearly, the correlation coefficients calculated when omitting observations from
 source("src/power_runtime.R")
 ```
 
-We can approach this analysis in the same way as in the previous section, by calculating the correlation coefficient for the power draw and render time for each virtual machine. Performing a similar analysis as in the previous section, we can calculate the correlation coefficient between the variables "powerDraw" and "runtime" for each individual virtual machine, still respecting the fact each virtual machine represents a unique environment. As before, we can view the distribution of correlation coefficients for these variables in a histogram.
+We can approach this analysis in the same way as in the previous section, by calculating the correlation coefficient for the power draw and render time for each virtual machine. This method takes into account that  each virtual machine represents a unique environment and may have different power consumption properties. As before, we can view the distribution of correlation coefficients for these variables in a histogram. Additionally, we can recalculate the correlation coefficients when exempting observations from the first two tasks to assess if these negatively skew the results as they did in the previous section.
 
 ```{r echo=FALSE}
-power_corr_hist
+grid.arrange(power_corr_hist,power_corr_hist2,nrow=2)
 ```
 
-The above plot shows that for all virtual machines, there exists a positive correlation between the runtime and the power draw of the GPU. The median correlation coefficient is `r format(round(median(power_vs_runtime_corr)))`, indicating a moderate positive correlation, which varies with minimum and maximum correlation coefficient values of `r format(round(min(power_vs_runtime_corr)))` and `r format(round(max(power_vs_runtime_corr)))` respectively. This indicates that as the runtime of a task increases, so does the amount of power that is used.
+The above plots indicate that for all virtual machines in both scenarios, there exists a positive correlation between the runtime and the power draw of the GPU. Compared to our previous analysis of the interplay between temperature and runtime, the first two tasks have a limited impact in skewing the results. As both distributions are normal, we may use parametric techniques to support this assertion with quantitative assessments. The weighted mean and standard deviation of the correlation distribution with all observations are `r format(round(weighted.mean(power_vs_runtime_corr,as.numeric(vm_weights)),2))` and `r format(round(weighted.sd(power_vs_runtime_corr,as.numeric(vm_weights)),2))`, respectively. Likewise, for the correlation distribution where the first two tasks are excluded, the weighted mean and standard deviation are 
+`r format(round(weighted.mean(power_vs_runtime_corr2,as.numeric(vm_weights)),2))` and `r format(round(weighted.sd(power_vs_runtime_corr2,as.numeric(vm_weights)),2))`, respectively. We can therefore see that observations from the first two tasks do negatively skew the distribution and increase the variance, however in this case the magnitude of this effect is minimal. In both scenarios, however, we can observe a moderate positive correlation between power draw and render time, suggesting that as one of these variables increases, so will the other.
+
+Another interesting facet of the interplay between these variables, is that it seems far more consistent over all virtual machines. When calculating the correlation coefficient using all of the data rather than per virtual machine for variables temperature and runtime, we observed a far reduced correlation coefficient than the weighted mean average of the correlation coefficients per virtual machine. This was reflective of the large range of different temperatures and runtimes across various virtual machines. In the case of variables power draw and runtime, the correlation coefficient calculated for these variables is `r format(round(cor(all_data$runtime,all_data$powerDraw),2))`. This value is far more representative of the above distributions and indicates that the values involved in this interplay are more consistent across different virtual machines than the temperature values.
+
 
 ### Can we quantify the variation in computation requirements for particular tiles?
 
@@ -488,21 +493,50 @@ The above plot shows that for all virtual machines, there exists a positive corr
 source("src/tile_variation.R")
 ```
 
-Using "all_data" we can plot the tile co-ordinates and visualise the variation in computation requirements. Below depicts the variation in "runtime" for each tile.
+Before quantifying the variation in the computation requirements for different tiles, we should visualise the distribution for each performance metric to determine which techniques can be implemented in our calculations.
 
 ```{r echo=FALSE}
+grid.arrange(top = "Performance Metric Distributions", runtime_hist,temp_hist,power_hist,mem_hist,gpu_hist,nrow=2,ncol=3)
+```
+
+Clearly, each variable is normally distributed with no obvious outliers, so we may use parametric techniques to quantify their variation. The below table details the mean, standard deviation and coefficient of variation for each variable.
+
+```{r echo=FALSE}
+knitr::kable(performance_metric_table, col.names=c("Metric", "Mean", "Standard Deviation","Coefficient of Variation"), align = "c", digits=2,"simple")
+```
+
+Using the coefficient of variation as the basis to compare different variable variances, it is evident that the variables "runtime", "powerDraw" and "MemUtilPerc" vary the most across different tiles. Having said this, objectively the variation across the tiles is limited, with the maximum coefficient of variation being 0.15.
+
+To gain a more intuitive understanding of which particular tiles display the most variation in computation requirements, we can plot the x and y co-ordinates of each tile, and use colour to highlight the variation of a chosen variable. The below plots depict the variation of runtime, % Memory Usage and Power Draw across the tiles in the terapixel image.
+
+
+```{r echo=FALSE, out.width = "70%",out.height= "50%",fig.align = 'center'}
 tile_runtime_plot
 ```
-
-```{r echo=FALSE}
+```{r echo=FALSE, out.width = "70%",out.height= "50%",fig.align = 'center'}
 tile_mem_plot
 ```
+```{r echo=FALSE, out.width = "70%",out.height= "50%",fig.align = 'center'}
+tile_power_plot
+```
 
-When comparing the above plot with the below final terapixel image, we can observe lower runtimes for the areas of the image with the same colour. In contrast, we can observe much higher runtimes for areas where render tracing has been used extensively to depict shadows. In addition, we can observe the high runtimes in the above plot corresponding to the first and second tasks that were discussed in previous sections.
+In the above plots a divergent colour scale is used to highlight particular areas that are substantially above and below the average value for that variable. A clear trend in all three plots is that the areas with less computational requirements are the same. For the plots of runtime and power draw, this supports our earlier conclusion of a positive correlation between both variables, and provides evidence that the same is true with these variables and % Memory Usage. As these plots provide renderings of the terapixel image, but rotated anti-clockwise by 90 degrees, we will perform the same transformation to the final terapixel image and cross-reference them. 
 
-```{r echo=FALSE}
+
+```{r echo=FALSE, out.width = "40%",out.height= "40%", fig.align = 'center'}
 knitr::include_graphics("images/full_terapixel_image.png")
 ```
+
+
+When comparing the final image with the plots depicting performance metric variation, we can observe lower computational requirements for the large areas of the image of the same colour. In contrast, we can observe much higher runtimes for areas where render tracing has been used extensively to depict shadows. A particular area of note in this case in the above runtime plot is around (100,100), which renders the part of the terapixel image shown below.
+
+
+```{r echo=FALSE, out.width = "40%",out.height= "40%", fig.align = 'center'}
+knitr::include_graphics("images/terapixel_shadow.png")
+```
+
+
+In addition, we can observe the high runtimes in the runtime plot corresponding to the first and second tasks that were discussed in previous sections.
 
 
 ### Can we identify particular GPU cards (based on their serial numbers) whose performance differs to other cards? (i.e. perpetually slow cards).
@@ -512,17 +546,18 @@ source("src/gpu_analysis.R")
 ```
 
 
-To identify GPU cards with distinct performance properties, we can summarise "all_data" by taking averages of each performance metric per virtual machine. However. it is worth recalling that the first two tasks performed on the majority of virtual machines exhibit behavior that is not representative of the GPU card performance in the remainder of the total rendering process. Taking this into consideration, we can create two data summaries from "all_data" providing the average performance metrics for each virtual machine. One data set will consider data from all tasks, whilst the second will exclude observations made in the first two tasks performed on each virtual machine. Using both of these data sets, we can identify GPU cards that express unusual properties and  verify that this is the case over all tasks and are not being heavily skewed by abnormalities in the first two.
+To identify GPU cards with distinct performance properties, we can summarise "all_data" by taking averages of each performance metric per virtual machine. However. it is worth recalling that the first two tasks performed on the majority of virtual machines exhibit behavior that is not representative of the GPU card performance over the remainder of the total rendering process. Taking this into consideration, we can create two data summaries from "all_data" providing the average performance metrics for each virtual machine. One data set will consider data from all tasks, whilst the second will exclude observations made in the first two tasks performed on each virtual machine. Using both of these data sets, we can identify GPU cards that express unusual properties and  verify that this is the case over all tasks and are not just being heavily skewed by abnormalities in the first two.
 
-The below plot depicts 15 different GPU cards with the highest average render time per tile. Moreover, it shows two averages, one calculated including the first two task observations and one without. 
+The below plot depicts 15 different GPU cards with the highest average render time per tile, in descending order by the average including observations from the first two tasks. It shows two averages, one calculated including the first two task observations and one without. 
 
 ```{r echo=FALSE}
 slow_card_inc_plot
 ```
 
-We can observe that for the majority of the GPU cards, the average total render time per tile increases with the inclusion of the first two tasks, however it is not a significant increase. Additionally, while the inclusion slightly alters the order of the 15 GPU cards with the highest average total render time per tile, it does not substantially change it and the slowest 15 GPU cards remain the slowest GPU cards regardless. The average increase when including observations from the first two tasks across all GPU cards is `r format(round(mean(avg_diff$runtime_diff),2))` so it does skew the averages slightly but not enough to cause a significant alteration in the data. 
+We can observe that for the majority of the GPU cards, the average total render time per tile increases , on average, by `r format(round(mean(avg_diff$runtime_diff),2))` seconds with the inclusion of the first two tasks. Therefore, these observations do skew the averages slightly but not enough to cause a significant alteration in the data. Additionally, while the inclusion slightly alters the order of the 15 GPU cards with the highest average total render time per tile, these cards still remain the slowest of the 1024 total GPU cards. 
 
-We can now observe the distribution of the average total render time per tile for each GPU, calculated including the observations for the first two tasks.
+We can also observe the distribution of the average total render time per tile for each GPU, calculated including the observations for the first two tasks. It is clear in the below plot that there are two main groups of GPU cards that differ in runtime performance.
+
 
 ```{r echo=FALSE}
 ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_runtime) + 
@@ -532,12 +567,10 @@ ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_r
   )
 ```
 
-It is clear in the above plot that there are two main groups of GPU cards that differ in performance. One group with an average render time per tile of approximately 46 seconds, and the other with 42 seconds.
-
 
 ### What can we learn about the efficiency of the task scheduling process?
 
-From our analysis of the "gpu" data, we found that this data set contains snapshots of each virtual machine every two seconds. This revealed periods between tasks where the GPU card was not being utilised. Whilst we used this previously to assign task numbers to each virtual machine tile rendering process, we can also use it to establish how efficient the task scheduling process is. The more efficiently the tasks or scheduled, the less time will be spent on the virtual machine between tasks, therefore we can investigate this by finding the proportion of observations where the gpuMemUtil and gpuUtilPerc variables are equal to 0 (indicating that a task is not running) from the beginning of the first task to the end of the final one. To do this, we can use the below function:
+From our analysis of the "gpu" data, we found that this data set contains snapshots of each virtual machine every two seconds. This revealed periods between tasks where the GPU card was not being utilised. Whilst we used this previously to assign task numbers to each virtual machine tile rendering process, we can also use it to establish how efficient the task scheduling process is. The more efficiently the tasks are scheduled, the less time each virtual machine will spend not running in between tasks. Therefore, we can investigate this by finding the proportion of observations where the gpuMemUtil and gpuUtilPerc variables are equal to 0 (indicating that a task is not running) from the beginning of the first task to the end of the final one. To do this, we can use the below function:
 
 ```{r eval = FALSE}
 waiting_time_perc = function(hostn) {
@@ -551,7 +584,7 @@ waiting_time_perc = function(hostn) {
 
 This function returns the percentage of observations where the gpuMemUtil and gpuUtilPerc variables are equal to 0 for a given virtual machine hostname. It does not count any observations taken before the beginning of the first task or after the final task has finished. We can apply this function to all 1024 virtual machines and visualise the distribution of the result.
 
-```{r}
+```{r echo=FALSE}
 ggplot() + aes(x=vm_waiting_times) + geom_histogram(bins=30) + 
   labs(
     x = "Time Between Tasks (% of Total Time)",
@@ -575,7 +608,28 @@ This indicates that there is a strong negative correlation between the average t
 
 ## Evaluation
 
+### Evaluate Results
+
+Initially set out at the beginning of this report, our goal was to rigorously evaluate cloud supercomputing as a method to create terapixel images. To achieve this goal, several objectives for the analysis were given. Upon reflection, it is clear that these objectives have been met. Each objective has been clearly and methodically approached and given a corresponding subsection within the "Modelling" section of this report. As part of this critical evaluation, we made some key findings. First of all, it was established that there is an error in the "TotalRender" eventName as part of the "application.checkpoints" file supplied by the university. The start and stop times assigned to the "TotalRender" eventName omitted the "Tiling" event, therefore as part of this analysis the total render time for each tile was calculated. Another important discovery was that at the beginning of the rendering process, primarily in the first two tasks performed on 77% of the virtual machines, the "Uploading" event takes significantly longer than during the remainder of the full rendering process. This observation meant that the total rendering times for these tasks were significantly skewed, and our further analysis of the data would take this into account. 
+
+We also showed that there is a positive correlation between both total render time and temperature, as well total render time and power draw, This analysis was performed by calculating the correlation coefficients for these variables on each virtual machine to account for any differences in the GPU card. The differences in these GPU cards was investigated further in our later analysis, where the 15 slowest GPU cards were determined from the data by finding the highest average total render times per tile.
+
+The variation of the performance metrics across the different tiles in the image was assessed using parametric techniques such as the arithmetic mean and standard deviation. These were used once the normality of the variable distributions was verified. Finally, we analysed the task scheduling process and found that on average 25% of the total render time was spent by virtual machines waiting for a task to be assigned. This result means there is certainly advancement to be made in terms of task scheduling for cloud supercomputing processes.
+
+### Review Process
+
+Is it optimal?
+
+Which activities have been missed?
+
+Discuss average of values taken in data preprocessing step of joining gpu
+
+### Determine Next Steps
+
+
+
+
 ## Deployment
 
-
+Discuss shiny app
 
