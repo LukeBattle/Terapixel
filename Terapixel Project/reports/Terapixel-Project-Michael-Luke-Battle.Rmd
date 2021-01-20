@@ -618,18 +618,21 @@ The variation of the performance metrics across the different tiles in the image
 
 ### Review Process
 
-Is it optimal?
+Due to the large size of the data sets, it was important to ensure that any processes ran on the entirety of it were well optimised. To this end, object growth has been avoided throughout the analysis, meaning that should this analysis be performed in even larger data sets we can expect to code to scale well. To further promote efficiency, functions such as "apply" and "lapply" were used heavily throughout the analysis in place of "for" loops that lead to inefficiency. One of the few instances of a "for" loop being used in the preprocessing section is within the "assign_task_no" function. To avoid object growth, a vector of a specific numeric length was created prior to the for loop being ran in order to avoid incremental object growth. 
 
-Which activities have been missed?
+As well as being well optimised, the data pipeline created for the analysis in this report is fully reproducible. By making use of Project Template, the analysis can be replicated using only the source and data files. Once the ProjectTemplate library is loaded and the working directory for R is set to the project location, running the "load,project()" function will load the data and perform the munging operations that preprocess the data into. The plots in the analysis that are based off this will then be automatically updated and this will be fed through into the final interactive shiny application. The only requirements are that the data is formatted the same as the data files used in this iteration of the project analysis.  
 
-Discuss average of values taken in data preprocessing step of joining gpu
-
-### Determine Next Steps
-
-
+An area of the analysis that could be improved would be to make more use of the granular data obtained from "gpu". For our evaluation, an arithmetic mean has been used to describe the performance metrics for each task per virtual machine. To investigate the behaviour of these performance metrics in more detail, the data at the most granular level could have been used and may have revealed further insights about the rendering process and the GPU cores. This is a clear area that could be built upon if further analysis of the terapixel rendering process was to be undertaken.  
 
 
 ## Deployment
 
-Discuss shiny app
+The key findings from the analysis detailed in this report are deployed in an interactive shiny app. This app is based on the data in this report, thus ensuring it's reproducibility and ease to update should the analysis be performed on a new data set. It allows the user to look at the interaction between different performance metrics over different virtual machines, whilst providing a correlation coefficient for comparison with some of the analysis detailed above. Other key findings shown in the app include the variability of the performance metrics for each tile cross-referenced with the final image, as well as the event timelines.  ELABORATE
+
+
+
+
+
+
+
 

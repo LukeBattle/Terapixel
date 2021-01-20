@@ -15,9 +15,11 @@
     y = "Average Runtime (seconds)"
   ) + guides(colour = FALSE, size = FALSE) + scale_shape_discrete(name = "First 2 tasks included?",
                                                                    labels = c("No","Yes")))
+cor(unlist(all_data[all_data$hostname == unique_hostnames[1],"tempC"]),
+    unlist(all_data[all_data$hostname == unique_hostnames[1],"runtime"]))
 
-
-ggplot(arrange(filter(slow_cards,runtime_env == "runtime_exc")), aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
+ggplot(arrange(filter(slow_cards,runtime_env == "runtime_exc")), 
+       aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
   geom_point() + theme(axis.title.x=element_blank(),
                        axis.text.x = element_blank(),
                        axis.ticks.x = element_blank())

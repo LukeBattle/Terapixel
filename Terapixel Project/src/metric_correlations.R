@@ -1,3 +1,5 @@
+library(ProjectTemplate)
+load.project()
 
 
 temp_vs_runtime_corr = lapply(unique_hostnames,calculate_corr,var1 = "runtime", var2 = "tempC", task_number = 0)

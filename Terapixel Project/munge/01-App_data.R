@@ -51,6 +51,8 @@ app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
   pivot_wider(names_from = eventName,
               values_from = runtime)
 
+view(filter(app_wide, eventName == "Uploading" & runtime>10))
+
 app_wide$TotalRender = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + app_wide$Tiling
 
 app_wide = app_wide %>%
