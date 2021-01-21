@@ -232,22 +232,34 @@ We can then confirm that the difference between the "TotalRender" and "TotalProc
 sum(as.numeric(event_data$diff))/sum(as.numeric(event_data$Tiling))
 ```
 
-Therefore, we will apply the above transformations to the app_wide data in order to change the "TotalRender" event to reflect the true summation of runtimes. Once these have been applied, the data is converted back to long format with variable "eventName" whilst variables "START" and "STOP" are removed as they are not accurate for eventName "TotalRender". These steps are performed in the below code.
+However, a look at the timeline of event executions for a single task reveals that the "Uploading" and "Tiling" events are initialised concurrently. 
 
-```{r eval=FALSE}
-app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
-  pivot_wider(names_from = eventName,
-              values_from = runtime)
-
-app_wide$TotalRender = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + 
-  app_wide$Tiling
-
-app_wide = app_wide %>%
-  pivot_longer(c("Render","Uploading","Saving Config","TotalRender","Tiling"),
-               names_to = "eventName", values_to = "runtime" )
-
+```{r}
+app_wide[app_wide$taskId == unique(app_wide$taskId)[1], c("eventName","START","STOP","runtime")]
 ```
 
+Due to this, the runtime of "TotalRender" will not be equal to the summation of the runtimes for the other events. To verify that "Uploading" and "Tiling" are initialised at the same time for all rendering tasks in the file, we can create a vector of the difference between the start time for "Uploading" and "Tiling" in every instance. This is done using the below function with corresponding code.
+
+```{r eval=FALSE}
+find_event_start_diff = function(task_Id) {
+  
+  return(app_wide[app_wide$taskId == task_Id & app_wide$eventName == "Uploading","START"] - 
+           app_wide[app_wide$taskId == task_Id & app_wide$eventName == "Tiling","START"])
+}
+
+event_start_diff = lapply(unique_tasks,find_event_start_diff)
+
+event_start_diff = unlist(event_start_diff)
+```
+
+In viewing the distribution of this difference vector, it is clear that the differences between the start times for "Uploading" and "Tiling" are negligible. The largest difference between the two start times over the whole data is around 0.16 seconds, while the majority of differences are distributed heavily around 0.01 seconds. Therefore, it is fair to assume that they are initialised at the same time for every task.
+
+```{r echo=FALSE}
+ggplot() + aes(event_start_diff) + geom_boxplot() + labs(
+  x = "Seconds",
+  title = "Difference in Start Time of Uploading and Tiling Event for Each Task "
+)
+```
 
 In order to view the interaction of the "runtime" variable with variables from other data sets, it would be useful to create a new data set that exclusively contains eventName "TotalRender", thus showing only the total runtime for each rendering task per virtual machine. To further enhance this data set and make it conducive to joining with the "gpu" data later in the analysis, a "task_no" variable will also be added, reflecting the chronological order that each rendering task is performed per virtual machine. These steps are performed using the following code:
 
@@ -370,7 +382,7 @@ Before comparing the runtimes of the different events in the app_wide data, it i
 grid.arrange(tiling_runtime_hist,uploading_runtime_hist,saving_runtime_hist,render_runtime_hist,ncol = 2,nrow =2)
 ```
 
-From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To gain a deeper understanding of the data, it would be helpful to investigate what could be causing these disproportionately high runtimes. One possible avenue of investigation is to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames with more than two occurances. 
+From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To gain a deeper understanding of the data, it would be helpful to investigate what could be causing these disproportionately high runtimes. One possible avenue of investigation is to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames with more than two occurrences. 
 
 ```{r}
 length(app_wide[app_wide$eventName == "Uploading" & app_wide$runtime >10,]$hostname)

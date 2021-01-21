@@ -31,6 +31,8 @@ app_wide = app_data %>%
 
 app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
 
+cache('app_wide')
+
 #create event_data to check TotalRender eventName
 
 event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
@@ -47,19 +49,13 @@ cache('event_data')
 
 #use calculated runtimes to recalculate incorrect TotalRender task runtime
 
-app_wide = app_wide[c("eventName","runtime","taskId","hostname","jobId")] %>%
-  pivot_wider(names_from = eventName,
-              values_from = runtime)
+unique_tasks = unique(app_wide$taskId)
 
-view(filter(app_wide, eventName == "Uploading" & runtime>10))
+event_start_diff = lapply(unique_tasks,find_event_start_diff)
 
-app_wide$TotalRender = app_wide$Render + app_wide$Uploading + app_wide$`Saving Config` + app_wide$Tiling
+event_start_diff = unlist(event_start_diff)
 
-app_wide = app_wide %>%
-  pivot_longer(c("Render","Uploading","Saving Config","TotalRender","Tiling"),names_to = "eventName", values_to = "runtime" )
-
-
-cache('app_wide')
+cache('event_start_diff')
 
 #create dataset with just totalrender events
 

@@ -5,6 +5,7 @@
   ylim(20,70))
 
 
+
 (slow_card_inc_plot = ggplot(slow_cards[1:30,], 
                             aes(x = reorder(as.factor(gpuSerial),colour_map), 
                                 y = avg_runtime, colour = as.factor(colour_map))) + 
@@ -15,6 +16,7 @@
     y = "Average Runtime (seconds)"
   ) + guides(colour = FALSE, size = FALSE) + scale_shape_discrete(name = "First 2 tasks included?",
                                                                    labels = c("No","Yes")))
+
 cor(unlist(all_data[all_data$hostname == unique_hostnames[1],"tempC"]),
     unlist(all_data[all_data$hostname == unique_hostnames[1],"runtime"]))
 
