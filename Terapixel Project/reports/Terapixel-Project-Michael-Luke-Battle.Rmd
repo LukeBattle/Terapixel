@@ -238,18 +238,16 @@ However, a look at the timeline of event executions for a single task reveals th
 app_wide[app_wide$taskId == unique(app_wide$taskId)[1], c("eventName","START","STOP","runtime")]
 ```
 
-Due to this, the runtime of "TotalRender" will not be equal to the summation of the runtimes for the other events. To verify that "Uploading" and "Tiling" are initialised at the same time for all rendering tasks in the file, we can create a vector of the difference between the start time for "Uploading" and "Tiling" in every instance. This is done using the below function with corresponding code.
+Due to this, the runtime of "TotalRender" will not be equal to the summation of the runtimes for the other events. To verify that "Uploading" and "Tiling" are initialised at the same time for all rendering tasks in the file, we can widen the data to view only these events and their respective start time for each task. By then adding a new column that calculates the difference between each start time, we compute a vector of all differences.
 
 ```{r eval=FALSE}
-find_event_start_diff = function(task_Id) {
-  
-  return(app_wide[app_wide$taskId == task_Id & app_wide$eventName == "Uploading","START"] - 
-           app_wide[app_wide$taskId == task_Id & app_wide$eventName == "Tiling","START"])
-}
+event_diff = filter(app_wide,eventName %in% c("Uploading","Tiling")) %>%
+  select(eventName,taskId,START) %>%
+  pivot_wider(names_from = eventName,
+              values_from = START) %>%
+  mutate(start_diff = Uploading - Tiling)
 
-event_start_diff = lapply(unique_tasks,find_event_start_diff)
-
-event_start_diff = unlist(event_start_diff)
+event_start_diff = as.numeric(event_diff$start_diff)
 ```
 
 In viewing the distribution of this difference vector, it is clear that the differences between the start times for "Uploading" and "Tiling" are negligible. The largest difference between the two start times over the whole data is around 0.16 seconds, while the majority of differences are distributed heavily around 0.01 seconds. Therefore, it is fair to assume that they are initialised at the same time for every task.
@@ -430,7 +428,19 @@ From this we can surmise that there are inefficiencies at the beginning of the t
 event_runtime_plot
 ```
 
-Clearly, "Render" dominates the overall process. This is followed by "Uploading", which is only `r format(round((event_plot_data[event_plot_data$eventName == "Uploading",]$runtime/event_plot_data[event_plot_data$eventName == "Tiling",]$runtime - 1)*100,2))`% longer than "Tiling". Finally, "Saving Config" takes almost no time at all. The above plot also depicts how the "TotalRender" eventName that we created in the previous section more accurately reflects the combination of all event runtimes, as previously it would have been approximately a second shorter due to the exclusion of "Tiling".
+Clearly, "Render" dominates the overall process. This is followed by "Uploading", which is only `r format(round((event_plot_data[event_plot_data$eventName == "Uploading",]$runtime/event_plot_data[event_plot_data$eventName == "Tiling",]$runtime - 1)*100,2))`% longer than "Tiling". Finally, "Saving Config" takes almost no time at all. An important point to consider with regards to the above plot, however, is that in the previous section we proved that the "Uploading" and "Tiling" events are initialised simultaneously. Therefore, only the event with the longer runtime will contribute to the overall total rendering time for each tile. By calculating the difference in render time for each "Uploading" and "Tiling" event per task, we can see the "Uploading" event is longer than "Tiling" every time. Therefore, the "Tiling" event does not contribute to the overall runtime of the total terapixel rendering process. The code that verifies this is given below:
+
+```{r}
+runtime_diff = filter(app_wide,eventName %in% c("Uploading","Tiling")) %>%
+  select(eventName,taskId,runtime) %>%
+  pivot_wider(names_from = eventName,
+              values_from = runtime) %>%
+  mutate(diff = Uploading - Tiling)
+
+
+sum(runtime_diff$diff > 0)/dim(runtime_diff)[1]
+```
+
 
 ### What is the interplay between GPU temperature and runtime performance?
 
@@ -622,7 +632,9 @@ This indicates that there is a strong negative correlation between the average t
 
 ### Evaluate Results
 
-Initially set out at the beginning of this report, our goal was to rigorously evaluate cloud supercomputing as a method to create terapixel images. To achieve this goal, several objectives for the analysis were given. Upon reflection, it is clear that these objectives have been met. Each objective has been clearly and methodically approached and given a corresponding subsection within the "Modelling" section of this report. As part of this critical evaluation, we made some key findings. First of all, it was established that there is an error in the "TotalRender" eventName as part of the "application.checkpoints" file supplied by the university. The start and stop times assigned to the "TotalRender" eventName omitted the "Tiling" event, therefore as part of this analysis the total render time for each tile was calculated. Another important discovery was that at the beginning of the rendering process, primarily in the first two tasks performed on 77% of the virtual machines, the "Uploading" event takes significantly longer than during the remainder of the full rendering process. This observation meant that the total rendering times for these tasks were significantly skewed, and our further analysis of the data would take this into account. 
+Initially set out at the beginning of this report, our goal was to rigorously evaluate cloud supercomputing as a method to create terapixel images. To achieve this goal, several objectives for the analysis were given. Upon reflection, it is clear that these objectives have been met. Each objective has been clearly and methodically approached and given a corresponding subsection within the "Modelling" section of this report. As part of this critical evaluation, we made some key findings.
+
+First of all, it was established that the "Tiling" and "Uploading" events began concurrently. We then showed that the "Uploading" event is always longer than the "Tiling" event, therefore "Tiling" makes no contribution to the overall rendering time for each task. Another important finding was that at the beginning of the rendering process, primarily in the first two tasks performed on 77% of the virtual machines, the "Uploading" event takes significantly longer than during the remainder of the full rendering process. This observation meant that the total rendering times for these tasks were significantly skewed, and our further analysis of the data would take this into account. 
 
 We also showed that there is a positive correlation between both total render time and temperature, as well total render time and power draw, This analysis was performed by calculating the correlation coefficients for these variables on each virtual machine to account for any differences in the GPU card. The differences in these GPU cards was investigated further in our later analysis, where the 15 slowest GPU cards were determined from the data by finding the highest average total render times per tile.
 

@@ -71,11 +71,13 @@ high_uploading_runtime = filter(app_wide,runtime>10 & eventName == "Uploading") 
     ))
 
 
+
 (task_no_uploading = ggplot(high_uploading_runtime, aes(x = task_no)) +
   geom_bar() + labs(
     x = "Task Number",
     y = "Frequency",
     title = "Frequency of Task Numbers"
   )) 
+
 
 

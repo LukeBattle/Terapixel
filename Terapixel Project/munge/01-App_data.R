@@ -47,15 +47,18 @@ event_data$diff = event_data$totalprocess - event_data$TotalRender
 
 cache('event_data')
 
-#use calculated runtimes to recalculate incorrect TotalRender task runtime
+#calculate differences in START time for Uploading and Tiling events
 
-unique_tasks = unique(app_wide$taskId)
+event_diff = filter(app_wide,eventName %in% c("Uploading","Tiling")) %>%
+  select(eventName,taskId,START) %>%
+  pivot_wider(names_from = eventName,
+              values_from = START) %>%
+  mutate(start_diff = Uploading - Tiling)
 
-event_start_diff = lapply(unique_tasks,find_event_start_diff)
-
-event_start_diff = unlist(event_start_diff)
+event_start_diff = as.numeric(event_diff$start_diff)
 
 cache('event_start_diff')
+
 
 #create dataset with just totalrender events
 

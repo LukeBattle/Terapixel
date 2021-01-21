@@ -1,6 +1,8 @@
 library(shiny)
 source("src/metric_correlations.R")
 library(shinydashboard)
+library(vistime)
+library(plotly)
 
 ui = tabsetPanel(
   
@@ -78,9 +80,35 @@ ui = tabsetPanel(
     
     
   ) 
-))
+)),
+  tabPanel("Event Timeline", fluidPage(
+    
+    
+    sidebarLayout(
+      sidebarPanel(width = 6,
+        
+        selectInput("host",
+                    selectize = FALSE,
+                    size = 2,
+                    label = "Choose the host machine",
+                    choices = unique(app_wide$hostname),
+                    selected = unique(app_wide$hostname)[1]
+        ),
+        
+        sliderInput("time_int","Range:", timeFormat = "%H:%M:%S",label = "Select Time Interval",
+                    min = min(app_wide$START), max = max(app_wide$STOP),
+                    value = c(min(app_wide$START),min(app_wide$START) +180),
+                    step = 60)
+        
+        ),
+    mainPanel(width = 6,
+              plotlyOutput("dominant_events"))
+    
+  )
 
-)
+)))
+
+
   
 
 server = function(input,output) {
@@ -106,6 +134,16 @@ server = function(input,output) {
                                           unlist(all_data[all_data$gpuSerial == input$serial,input$var2])),2),
             color = "blue",fill = TRUE)
   })
+  
+  output$dominant_events = renderPlotly({
+    
+    vistime(filter(app_wide,
+                   hostname == input$host &  eventName != "TotalRender" & START >= input$time_int[1] &
+                     STOP <= input$time_int[2]), 
+            col.group = "eventName",col.start = "START",col.end = "STOP",
+            col.event = "eventName",show_labels = FALSE)
+  })
+  
 
 }
 

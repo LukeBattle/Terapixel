@@ -1,6 +1,7 @@
 
 library(ProjectTemplate)
 load.project()
+library(vistime)
 
 str(application.checkpoints)
 
@@ -172,3 +173,13 @@ sum(totalrender_data$task_no == gpu_summary$task_no) == length(gpu_summary$hostn
 gpu_app_data %>%
   count(taskId) %>%
   filter(n > 1)
+
+
+ggplot(filter(app_wide,hostname == unique_hostnames[1]&  eventName != "TotalRender")) + aes(START) +
+  geom_point() +
+  geom_line()
+
+vistime(filter(app_wide,hostname == unique_hostnames[2] &  eventName != "TotalRender" & START<"2018-11-08 07:45:00"), col.group = "eventName",
+        col.start = "START",col.end = "STOP",col.event = "eventName",show_labels = FALSE)
+
+?vistime

@@ -39,3 +39,9 @@
 *event_plot_data.hash
 *event_start_diff.RData
 *event_start_diff.hash
+*avg_diff.RData
+*avg_diff.hash
+*gpu_card_summary_exc_first_tasks.RData
+*gpu_card_summary_exc_first_tasks.hash
+*slow_cards.RData
+*slow_cards.hash
