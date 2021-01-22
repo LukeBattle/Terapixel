@@ -60,3 +60,25 @@ perc_waiting_time = ggplot() + aes(vm_waiting_times) + geom_histogram(binwidth =
     title = "Time vs % RAM usage"
   ))
 
+
+(zero_plot2  = ggplot(data = filter(gpu_data,hostname == unique_hostnames[1] & 
+                                      Time < "2018-11-08 08:00:00"), aes(x = Time, y = gpuMemUtilPerc)) +  
+    geom_line() +
+    labs(
+      x = "Time",
+      y = "gpuMemUtilPerc",
+      title = "Time vs % RAM usage"
+    ))
+
+vm_waiting_times[1]
+
+(abstract_plot = ggplot(app_wide, aes(task_no, runtime, color = eventName)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(fun = mean, geom = "point") + 
+  labs(
+    x = "Task Number",
+    y = "Average Runtime (seconds)",
+    title = "Average Runtime vs Task Number for each Event",
+    color = "Event"
+  ))
+

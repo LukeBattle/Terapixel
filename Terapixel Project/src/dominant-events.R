@@ -27,7 +27,7 @@
 
     
 
-(uploading_runtime_hist = ggplot(filter(app_wide,eventName == "Uploading")) +
+(uploading_runtime_hist = ggplot(filter(app_wide,eventName == "Uploading" & task_no < 3)) +
     geom_histogram(aes(x = as.numeric(runtime)), bins = 30) +
     labs(
       x = "Task Runtime (Seconds)",
@@ -56,8 +56,7 @@
     geom_histogram(aes(x = as.numeric(runtime)), bins = 30))
 
 high_uploading_runtime = filter(app_wide,runtime>10 & eventName == "Uploading") %>%
-  left_join(task.x.y,by = c("taskId")) %>%
-  left_join(all_data[c("taskId","task_no")], by = c("taskId"))
+  left_join(task.x.y,by = c("taskId"))
 
 
 (uploading_runtime_plot  = ggplot(data = filter(high_uploading_runtime, level == 12), 

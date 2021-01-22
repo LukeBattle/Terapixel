@@ -31,8 +31,6 @@ app_wide = app_data %>%
 
 app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
 
-cache('app_wide')
-
 #create event_data to check TotalRender eventName
 
 event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
@@ -59,7 +57,6 @@ event_start_diff = as.numeric(event_diff$start_diff)
 
 cache('event_start_diff')
 
-
 #create dataset with just totalrender events
 
 totalrender_data = filter(app_wide,eventName == "TotalRender")
@@ -81,5 +78,26 @@ event_plot_data = app_wide %>%
 
 cache('event_plot_data')
 
+app_wide = app_wide %>%
+  left_join(select(totalrender_data,taskId,task_no), by = c("taskId"))
 
+cache('app_wide')
 
+ggplot(app_wide, aes(task_no, runtime, color = eventName)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(fun = mean, geom = "point")
+
+mean(filter(app_wide, task_no < 3 & eventName == "Uploading")$runtime)
+
+mean(filter(app_wide, task_no > 2 & eventName == "Uploading")$runtime)
+
+length(unique(filter(app_wide, task_no == 2 & eventName == "Uploading" & runtime > 10)$hostname))
+
+length(unique(filter(app_wide, task_no == 6 & eventName == "Uploading" & 
+                       runtime > mean(filter(app_wide,task_no >2 & eventName == "Uploading")$runtime))$hostname))
+
+mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)
+
+mean(filter(app_wide, task_no == 1 & eventName == "TotalRender")$runtime)
+
+mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)

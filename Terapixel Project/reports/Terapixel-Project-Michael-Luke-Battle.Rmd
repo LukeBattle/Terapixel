@@ -380,7 +380,7 @@ Before comparing the runtimes of the different events in the app_wide data, it i
 grid.arrange(tiling_runtime_hist,uploading_runtime_hist,saving_runtime_hist,render_runtime_hist,ncol = 2,nrow =2)
 ```
 
-From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To gain a deeper understanding of the data, it would be helpful to investigate what could be causing these disproportionately high runtimes. One possible avenue of investigation is to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task. To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames with more than two occurrences. 
+From the above plots we can observe some clear outliers for the "Uploading" event. Whilst the majority of the events have a runtime of around 1 second, there is a small peak at around 20 seconds. To gain a deeper understanding of the data, it would be helpful to investigate what could be causing these disproportionately high runtimes. One possible avenue of investigation is to examine which virtual machines the high upload times occur on, to see if some virtual machines have issues executing the "Uploading" task.To check this  we find the number of virtual machines that have higher than 10 second runtimes for the uploading task, take the unique values of these and then view the virtual machine hostnames with more than two occurrences. 
 
 ```{r}
 length(app_wide[app_wide$eventName == "Uploading" & app_wide$runtime >10,]$hostname)
@@ -421,7 +421,59 @@ Now, by plotting the distribution of the "task_no" we can see that it is heavily
 task_no_uploading
 ```
 
-From this we can surmise that there are inefficiencies at the beginning of the terapixel rendering process that stem from the "Uploading" task runtime being 20 times longer than it is during the remainder of the total process. This is an important point to consider when comparing the runtimes for different events, as the arithmetic mean runtime for the "Uploading" event will be skewed due to the outliers primarily located in tasks 1 and 2. Due to the median being far more robust against outliers, it would be a more appropriate metric in comparing the central tendency of each event runtime. The median will also reflect a runtime more representative of the "Uploading" event in the majority of tasks. The below bar chart depicts the median task runtime for each event. 
+From this we can surmise that there are inefficiencies at the beginning of the terapixel rendering process that stem from the "Uploading" task runtime being significantly longer than it is during the remainder of the total process. To quantify this more precisely, after joining the "task_no" variable to "app_wide" from "totalrender_data" by using "taskId" as the primary key, we can compare the average runtime for the "Uploading" event of the first two tasks to the rest of the tasks. 
+
+```{r}
+#arithmetic mean of runtime for "uploading" in first two tasks.
+mean(filter(app_wide, task_no < 3 & eventName == "Uploading")$runtime)
+
+#arithmetic mean of runtime "uploading" in tasks excluding first two.
+mean(filter(app_wide, task_no > 2 & eventName == "Uploading")$runtime)
+
+```
+
+Therefore, the runtime for the "Uploading" event is on average `r format(round((mean(filter(app_wide, task_no < 3 & eventName == "Uploading")$runtime)/mean(filter(app_wide, task_no > 2 & eventName == "Uploading")$runtime)-1)*100,2))`% longer in the first two tasks than in the remaining. To determine exactly how many virtual machines this occurs on, we can find the number of virtual machines that have a runtime higher than the average "Uploading" runtime for all tasks excluding the first two. 
+
+```{r}
+
+runtime_average = mean(filter(app_wide, task_no > 2 & eventName == "Uploading")$runtime)
+
+length(unique(filter(app_wide, task_no == 1 & 
+                       eventName == "Uploading" & runtime > runtime_average)$hostname))
+
+length(unique(filter(app_wide, task_no == 2 & 
+                       eventName == "Uploading" & runtime > runtime_average)$hostname))
+
+```
+
+So in tasks 1 and 2, 882 and 801 virtual machines have longer than average runtimes for the "uploading event", corresponding to `r format(round(882/1024*100,2))`% and `r format(round(801/1024*100,2))`% of the total virtual machines in the cloud supercomputer. 
+
+We can perform similar calculations on the "TotalRender" task to assess how the total render time of each task this is impacted by the high uploading times.
+
+```{r}
+#arithmetic mean of runtime for "TotalRender" in first two tasks.
+mean(filter(app_wide, task_no < 3 & eventName == "TotalRender")$runtime)
+
+#arithmetic mean of runtime "TotalRender" in tasks excluding first two.
+mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)
+```
+
+So the TotalRender variable is only `r format(round((mean(filter(app_wide, task_no < 3 & eventName == "TotalRender")$runtime)/mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)-1)*100,2))`% longer on average during the first two tasks compared to the rest. Whilst this increase is not huge, it is a point to consider both in the remainder of this analysis and for future implementation of this cloud architecture. A primary goal of this project is to ensure the scalability of the process, and whilst an increase of this magnitude when individual task runtimes are on average less than a minute is small, if these were substantially increased this inefficiency would be far more impactful. The results of the above analysis can be summarised in the following plot, showing the change in average runtime for each event and task. 
+
+```{r echo=FALSE}
+ggplot(app_wide, aes(task_no, runtime, color = eventName)) +
+  stat_summary(fun = mean, geom = "line") + 
+  stat_summary(fun = mean, geom = "point") + 
+  labs(
+    x = "Task Number",
+    y = "Average Runtime (seconds)",
+    title = "Average Runtime vs Task Number for each Event",
+    color = "Event"
+  )
+```
+
+
+This is an important plot to consider when comparing the runtimes for different events, as the arithmetic mean runtime for the "Uploading" event will be skewed due to the outliers primarily located in tasks 1 and 2. Due to the median being far more robust against outliers, it would be a more appropriate metric in comparing the central tendency of each event runtime. The median will also reflect a runtime more representative of the "Uploading" event in the majority of tasks. The below bar chart depicts the median task runtime for each event. 
 
 
 ```{r echo=FALSE}
@@ -634,7 +686,7 @@ This indicates that there is a strong negative correlation between the average t
 
 Initially set out at the beginning of this report, our goal was to rigorously evaluate cloud supercomputing as a method to create terapixel images. To achieve this goal, several objectives for the analysis were given. Upon reflection, it is clear that these objectives have been met. Each objective has been clearly and methodically approached and given a corresponding subsection within the "Modelling" section of this report. As part of this critical evaluation, we made some key findings.
 
-First of all, it was established that the "Tiling" and "Uploading" events began concurrently. We then showed that the "Uploading" event is always longer than the "Tiling" event, therefore "Tiling" makes no contribution to the overall rendering time for each task. Another important finding was that at the beginning of the rendering process, primarily in the first two tasks performed on 77% of the virtual machines, the "Uploading" event takes significantly longer than during the remainder of the full rendering process. This observation meant that the total rendering times for these tasks were significantly skewed, and our further analysis of the data would take this into account. 
+First of all, it was established that the "Tiling" and "Uploading" events began concurrently. We then showed that the "Uploading" event is always longer than the "Tiling" event, therefore "Tiling" makes no contribution to the overall rendering time for each task. Another important finding was that at the beginning of the rendering process, primarily in the first task on 86% of the virtual machines and second task on 78%, the "Uploading" event takes significantly longer than during the remainder of the full rendering process. Specifically, on the average runtime over these two tasks is 10.6 times longer than the average over the remainder of the process for the "Uploading" event. This observation meant that the total rendering times for these tasks were significantly skewed, and our further analysis of the data would take this into account. 
 
 We also showed that there is a positive correlation between both total render time and temperature, as well total render time and power draw, This analysis was performed by calculating the correlation coefficients for these variables on each virtual machine to account for any differences in the GPU card. The differences in these GPU cards was investigated further in our later analysis, where the 15 slowest GPU cards were determined from the data by finding the highest average total render times per tile.
 
