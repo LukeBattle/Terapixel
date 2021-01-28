@@ -1,0 +1,167 @@
+commit 0b39a3942068ecae836b64da7d9644fa0496db55
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 28 11:49:04 2021 +0000
+
+    Final upload after chechking munge process
+
+commit 79a17bec7d05a059c15edb51523f9bb19829c2fb
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 28 11:28:54 2021 +0000
+
+    Further refining of report and supporting documentation
+
+commit e301c55da7e08d64ea953aca31ead130368e8ec0
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 28 10:29:05 2021 +0000
+
+    The folders are tidied and a README file is created
+
+commit 86ce3a08cdcba30799ad8269993b2a3a6c698b20
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 28 09:44:44 2021 +0000
+
+    Removed unnecessary README files
+
+commit d10476113cea80d42c67a13bf27c2d06c364b6b5
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 28 09:01:16 2021 +0000
+
+    Add additional annotation to code and fine tune report
+
+commit c19fa9974261417e9be5ffab95d766cd81610918
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Jan 22 19:56:25 2021 +0000
+
+    Added task number to app_wide data, and clarified analysis of amount of virtual machines with high uploading runtime for tasks 1 and 2. Created key images and structured abstract.
+
+commit e90704d3df6c7811f1c3a3c2c8146de55d1aee89
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 21 19:02:56 2021 +0000
+
+    Finished report first draft. Added dominant event tab to Shiny app.
+
+commit 9c4c17a009b965355cfbb0d1a5666d0c256dad56
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 21 10:35:38 2021 +0000
+
+    Added analysis of uploading and tiling event start times. Upload before full load.project() test
+
+commit d6672266b1c49b4fe607900568d10bef91ec0a42
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Jan 20 19:02:22 2021 +0000
+
+    Written the evaluation and deployment sections of the report. Began creation of interactive shiny application. www folder created to store final terapixel image for loading into shiny application.
+
+commit aa5b53f3ecaa94ac68957d8e3e5a56e4eda98729
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Jan 19 19:53:05 2021 +0000
+
+    Fully refined analysis and started writing project evaluation.
+
+commit 715fcb384abc0f4fb1c45f8568a80bc0a3f71806
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Jan 18 19:29:29 2021 +0000
+
+    Refined analysis report. Added several further calculations to the analysis such as weighted sd and weighted mean
+
+commit 838d4585e4dc0e858b1bbe5410acb2d554a296ee
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Jan 13 13:31:44 2021 +0000
+
+    Removed pixel summary from task_data munge file
+
+commit e284eff0fbb78317a89c6fa6c15fefce972b3577
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Jan 13 11:19:41 2021 +0000
+
+    Finished analysis first draft for perpetually slow GPU cards.
+
+commit dddeed7e57588c246ce1792e57b85a280a1c8bb5
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Jan 12 19:53:39 2021 +0000
+
+    Added analysis of perpetually slow cards and task scheduling process. These are in src files "task_scheduling" and "gpu_analysis"
+
+commit 41fc0509867c120a4b6e55ecec8f5f83a98af05e
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Jan 11 19:46:43 2021 +0000
+
+    Added analysis of temperature vs runtime, power vs runtime and started quantifying variation of computational requirements for tiles. Created new munge files corresponding to knew sections of analysis.
+
+commit 1fdea94a0412a47be6a94b66ca5e11f67ee73f41
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sun Jan 10 19:35:00 2021 +0000
+
+    Tidied munge code before running munge test
+
+commit cdc0c330bac1ac3b001fcd54c88a0083a623ab75
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sun Jan 10 19:03:31 2021 +0000
+
+    Created new files for analysis of dominant events and correlations between metrics. Analysed outliers in "Uploading" events.
+
+commit 8fdd266c0d9912ac93c2db19b1d51c4855a8a60a
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Jan 8 19:10:05 2021 +0000
+
+    Tidied up munge code in all files. Added function to calculate percentage of observations with gpuUtilMemPerc = 0 per virtual machine. Finished first draft of data preparation section of written report.
+
+commit 5b36f7d2713bb3629eb907d7691a6e65b92da584
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 7 20:50:14 2021 +0000
+
+    Created new method of assigning task no for each hostname based on task number in the gpu data set allowing for effective merge of gpu and application.checkpoint data sets.
+
+commit 3e3170a29faca291aa4a40255a59f8fd5261d7d3
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Jan 7 14:37:18 2021 +0000
+
+    Began data preparation section of written report. Created new file in src folder entitled "eda_plots" to create histograms of quantitative variables in app_data and gpu_data.
+
+commit d58f5f0b30437623eb6f3ff5edc5d1583c26ca83
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Jan 5 15:54:43 2021 +0000
+
+    Written report sections on business and data understanding
+
+commit d3d2eb0a8fbd0caa4439016c105b3e221b261443
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Jan 5 11:59:45 2021 +0000
+
+    Added data files created in munge to cache, added these files to gitignore list as they are too big to upload and linked them to project report.
+
+commit a71437d621f9197dd4708cb2e5a3b081c1b9f420
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Jan 5 11:03:49 2021 +0000
+
+    Changed as.tibble to as_tibble in munge files and created CRISP-DM layout for project report.
+
+commit 0471c21810c7555a3e1a82b22f0602f253ba46d7
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sun Jan 3 10:36:42 2021 +0000
+
+    Calculated total render runtime
+
+commit 504e2f55d14f8380b0c8c25324a2e9e80405016f
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sat Jan 2 09:14:00 2021 +0000
+
+    Create munge files for use of each dataset and tidied code up.
+
+commit 79db6fcb229fedd0f8bef09069368bb7f88b6212
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 30 18:46:42 2020 +0000
+
+    Used timestamp variable in application checkpoints to calculate even runtimes, and used this to find average runtimes for each event name.
+
+commit 1f9faa5d1815eb5969a76f5b16ebde0c1f7de9e3
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 30 09:09:01 2020 +0000
+
+    Ignore data files (over 100mb) and create rmarkdown report with project outline
+
+commit 628850d5945a45950f201ec758282a4a2af0d48b
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Tue Dec 29 10:11:44 2020 +0000
+
+    Start Project

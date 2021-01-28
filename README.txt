@@ -15,6 +15,9 @@ Shiny App - entitled "CSC8634-Results-App"
 -- located in "Terapixel\Terapixel Project"
 -- run application once project has been loaded
 
+Git Logs - entitled "[200725640]GitLogFile.txt
+-- located in the same directory as this README file
+
 This project rigorously evaluates the terapixel rendering process using cloud 
 supercomputing. The data has been provided by Newcastle University in
 three csv files located in the data sub-directory. All files have been 
