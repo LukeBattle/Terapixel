@@ -52,7 +52,7 @@ runtime_plot  = ggplot(data = filter(app_wide,eventName == "TotalRender"), aes(x
   geom_line() +
   labs(
     x = "Time",
-    y = "gpuMemUtilPerc",
+    y = "% RAM Usage",
     title = "Time vs % RAM usage"
   ))
 

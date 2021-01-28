@@ -49,6 +49,8 @@ calculate_corr = function(hostn,var1,var2, task_number = 0) {
   return(cor(filt_data[c(var1)],filt_data[c(var2)]))
 }
 
+
+#finds the difference in event START times for a specific task inputted as argument
 find_event_start_diff = function(task_Id) {
   
   return(app_wide[app_wide$taskId == task_Id & app_wide$eventName == "Uploading","START"] - 
