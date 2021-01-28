@@ -2,10 +2,10 @@ CSC8634 Project
 
 Deliverables:
 
-Abstract - entitled "CSC8634 Structured Abstract.pdf"
+Abstract - entitled "CSC8634 Structured Abstract Michael Luke Battle 200725640.pdf"
 -- located in the same directory as this README file
 
-Written Report - entitled "CSC8634 Written Report.pdf"
+Written Report - entitled "CSC8634 Written Report Michael Luke Battle 200725640.pdf"
 -- located in the same directory as this README file
 
 Project Report - entitled "Terapixel-Project-Michael-Luke-Battle.pdf"

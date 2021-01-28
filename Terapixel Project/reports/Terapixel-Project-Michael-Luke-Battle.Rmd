@@ -1,7 +1,7 @@
 ---
 title: "TeraScope Project"
 author: "Michael Luke Battle"
-date: "30/12/2020"
+date: "Student Number: 200725640"
 output: pdf_document
 ---
 
@@ -176,7 +176,7 @@ app_wide$runtime = as.numeric(app_wide$STOP - app_wide$START)
 
 ```
 
-Using "runtime", we can check if the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. We will do this in a different data set called "event_data" to preserve the data pipeline which "app_wide" is integral to. A new variable, "TotalProcess", is then created which is the summation of the runtimes for events "Saving Config", "Render", "Tiling" and "Uploading". Creating a new variable, "diff", to calculate the difference between the original "TotalRender" variable and"TotalProcess", reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable in the majority of cases.
+Using "runtime", we can check if the "TotalRender" runtime matches the summation of the runtimes for the other events by further widening the data to create a variable for each eventName, whilst also excluding variables "START" and "STOP" such that each observation in the data corresponds to an individual task. We will do this in a different data set called "event_data" to preserve the data pipeline which "app_wide" is integral to. A new variable, "TotalProcess", is then created which is the summation of the runtimes for events "Saving Config", "Render", "Tiling" and "Uploading". Another new variable, "diff", calculates the difference between the original "TotalRender" variable and"TotalProcess". The code for these steps is shown below. 
 
 ```{r eval=FALSE}
 event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>% 
@@ -190,7 +190,7 @@ event_data$totalprocess = event_data$Render + event_data$Uploading +
 event_data$diff = event_data$totalprocess - event_data$TotalRender
 ```
 
-We can then confirm that the difference between the "TotalRender" and "TotalProcess" variables is almost identical to the runtime of "Tiling" with the below calculation.
+This data reveals that the runtime for "Tiling" is not captured in the "TotalRender" variable in the majority of cases. .We can confirm this by showing that the difference between the "TotalRender" and "TotalProcess" variables is almost identical to the overall runtime of "Tiling" with the below calculation.
 
 ```{r}
 sum(as.numeric(event_data$diff))/sum(as.numeric(event_data$Tiling))
