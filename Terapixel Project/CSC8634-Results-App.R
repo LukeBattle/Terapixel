@@ -122,7 +122,7 @@ server = function(input,output) {
     
     ggplot(filter(all_data,level == 12), aes_string(x = "x", y = "y", colour = input$metric)) + 
       geom_point() +
-      scale_color_gradient2(midpoint=mid, low="green", mid="white",
+      scale_color_gradient2(midpoint=mid, low="blue", mid="white",
                               high="red", space = "Lab",guide = "colourbar")
     })
 
