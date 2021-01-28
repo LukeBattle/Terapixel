@@ -1,5 +1,5 @@
 ---
-title: "Terapixel Project"
+title: "TeraScope Project"
 author: "Michael Luke Battle"
 date: "30/12/2020"
 output: pdf_document
@@ -12,7 +12,8 @@ knitr::opts_knit$set(root.dir= normalizePath('..'))
 
 ## Introduction
 
-
+In this report, we will use the CRISP-DM method to create a fully reproducible data analytics pipeline for a
+data set provided by Newcastle University. This will involve us running through several key steps; *Business Understanding*, *Data Understanding*, *Data Preparation*, *Modelling*, *Evaluation* and *Deployment*.
 
 ## Business Understanding
 

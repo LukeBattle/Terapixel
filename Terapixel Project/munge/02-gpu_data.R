@@ -30,11 +30,18 @@ unique_hostnames = unique(gpu_data$hostname)
 
 cache('unique_hostnames')
 
+#use list of unique hostnames to assign task number to gpu data per hostname
+
 task_no_gpu = lapply(unique_hostnames,assign_task_no)
 
 task_no_gpu = unlist(task_no_gpu)
 
+#add task number to gpu_data
+
 gpu_data$task_no = task_no_gpu
+
+# create summary of gpu data, summarising back hostname, task number and gpuSerial. Takes mean 
+# values of each performance metric in each task
 
 gpu_summary = gpu_data[gpu_data$gpuMemUtilPerc!=0,] %>%
   group_by(hostname,task_no,gpuSerial) %>%
@@ -45,6 +52,7 @@ gpu_summary = gpu_data[gpu_data$gpuMemUtilPerc!=0,] %>%
 
 cache('gpu_summary')
 
+#join gpu_summary to totalrender_data
 
 gpu_app_data = left_join(totalrender_data,gpu_summary, by = c("hostname","task_no"))
 
@@ -52,7 +60,7 @@ cache('gpu_app_data')
 
 
 #create summary of gpu cards by serial number with averages for properties such as runtime, powerdrain, temp
-##etc.
+##etc. Arrange by runtime with slowest top
 
 gpu_card_summary = gpu_app_data %>%
   group_by(gpuSerial,hostname) %>%
@@ -65,6 +73,8 @@ gpu_card_summary = gpu_app_data %>%
 
 cache('gpu_card_summary')
 
+#create summary as above but excluding first two tasks
+
 gpu_card_summary_exc_first_tasks = filter(gpu_app_data,task_no>2) %>%
   group_by(gpuSerial,hostname) %>%
   summarise(runtime = mean(runtime),
@@ -76,7 +86,12 @@ gpu_card_summary_exc_first_tasks = filter(gpu_app_data,task_no>2) %>%
 
 cache('gpu_card_summary_exc_first_tasks')
 
+#create list of numbers to be assigned to each GPU
+
 colour_map = 1:1024
+
+#create dataframe by merging gpu_card_summary and gpu_card_summary_exc_first_tasks. Shows 15 slowest
+# gpu cards at top, to be used with plot
 
 slow_cards = as.data.frame(cbind("gpuSerial" = gpu_card_summary$gpuSerial,
                                  "runtime_inc" = gpu_card_summary$runtime, colour_map)) %>%
@@ -86,6 +101,8 @@ slow_cards = as.data.frame(cbind("gpuSerial" = gpu_card_summary$gpuSerial,
 
 cache('slow_cards')
 
+#calculate the average difference between runtime average including first two tasks and without them
+
 avg_diff = slow_cards %>%
   pivot_wider(names_from = runtime_env,
               values_from = avg_runtime) %>%
@@ -93,6 +110,8 @@ avg_diff = slow_cards %>%
   select(runtime_diff)
 
 cache('avg_diff')
+
+#calculate % of time VM spent idle from beginning of first task to end of the final one
 
 vm_waiting_times = lapply(unique_hostnames,waiting_time_perc)
 
