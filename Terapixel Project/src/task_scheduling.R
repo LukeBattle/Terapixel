@@ -1,3 +1,4 @@
+
 vm_wait_data = as.data.frame(cbind("hostname" = unique_hostnames,vm_waiting_times)) %>%
   left_join(filter(slow_cards,runtime_env == "runtime_exc"),by = c("hostname"))
 

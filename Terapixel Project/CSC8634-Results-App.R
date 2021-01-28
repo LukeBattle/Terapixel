@@ -88,8 +88,6 @@ ui = tabsetPanel(
       sidebarPanel(width = 6,
         
         selectInput("host",
-                    selectize = FALSE,
-                    size = 2,
                     label = "Choose the host machine",
                     choices = unique(app_wide$hostname),
                     selected = unique(app_wide$hostname)[1]

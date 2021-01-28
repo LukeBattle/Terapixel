@@ -1,11 +1,12 @@
+#plot of task number against runtime for slow GPU
+
 (slow_gpu = ggplot(filter(all_data,gpuSerial == slow_cards$gpuSerial[1]),
                           aes(x = task_no, y = runtime)) + geom_point() + geom_text(aes(label = task_no), 
                                                                                     vjust = 1.2) +
   xlim(0,60) + 
   ylim(20,70))
 
-
-
+#plot showing slowest 15 GPU cards, with average runtimes per card calculated with and without first tasks
 (slow_card_inc_plot = ggplot(slow_cards[1:30,], 
                             aes(x = reorder(as.factor(gpuSerial),colour_map), 
                                 y = avg_runtime, colour = as.factor(colour_map))) + 
@@ -13,19 +14,13 @@
     axis.text.x = element_text(vjust = 1, hjust = 1,angle = 45)
   ) + labs(
     x = "GPU Serial Number",
-    y = "Average Runtime (seconds)"
+    y = "Average Runtime (seconds)",
+    title = "15 GPU Cores with Highest Average Runtime"
   ) + guides(colour = FALSE, size = FALSE) + scale_shape_discrete(name = "First 2 tasks included?",
                                                                    labels = c("No","Yes")))
 
-cor(unlist(all_data[all_data$hostname == unique_hostnames[1],"tempC"]),
-    unlist(all_data[all_data$hostname == unique_hostnames[1],"runtime"]))
 
-ggplot(arrange(filter(slow_cards,runtime_env == "runtime_exc")), 
-       aes(x = as.factor(reorder(gpuSerial,-avg_runtime)), y = avg_runtime)) + 
-  geom_point() + theme(axis.title.x=element_blank(),
-                       axis.text.x = element_blank(),
-                       axis.ticks.x = element_blank())
-
+#distribution of average runtimes per GPU
 ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_runtime) + 
   geom_histogram(bins = 20) + labs(
     x = "Average Total Render Time per Tile per GPU (seconds)",
@@ -34,7 +29,6 @@ ggplot(arrange(filter(slow_cards,runtime_env == "runtime_inc"))) + aes(x = avg_r
 
 
 
-mean(avg_diff$runtime_diff)
 
 
 

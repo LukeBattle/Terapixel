@@ -20,7 +20,7 @@ app_data = unique(app_data)
 
 cache('app_data')
 
-#convert to wide format so that START and STOP are separate columns
+#convert to wide format so that START and STOP are separate columns, arrange by hostname and START time
 
 app_wide = app_data %>%
   pivot_wider(names_from = eventType,
@@ -38,8 +38,12 @@ event_data = app_wide[c("eventName","runtime","taskId","hostname")] %>%
   pivot_wider(names_from = eventName,
               values_from = runtime)
 
+#create new variable that containing sum of individual event runtimes
+
 event_data$totalprocess = event_data$Render + event_data$Uploading + event_data$`Saving Config` + 
   event_data$Tiling
+
+#find difference between totalrender and totalprocess
 
 event_data$diff = event_data$totalprocess - event_data$TotalRender
 
@@ -61,15 +65,23 @@ cache('event_start_diff')
 
 totalrender_data = filter(app_wide,eventName == "TotalRender")
 
+#create list of unique hostnames
+
 unique_app_hostname = unique(totalrender_data$hostname)
+
+#assign task number to each task in a hostname
 
 task_no_per_host = lapply(unique_app_hostname,assign_tr_task)
 
 task_no_per_host = unlist(task_no_per_host)
 
+#append task number to totalrender data
+
 totalrender_data$task_no = task_no_per_host
 
 cache('totalrender_data')
+
+#create summary data for median event runtimes
 
 event_plot_data = app_wide %>%
   group_by(eventName) %>%
@@ -78,26 +90,11 @@ event_plot_data = app_wide %>%
 
 cache('event_plot_data')
 
+#join task number to app_wide
+
 app_wide = app_wide %>%
   left_join(select(totalrender_data,taskId,task_no), by = c("taskId"))
 
 cache('app_wide')
 
-ggplot(app_wide, aes(task_no, runtime, color = eventName)) +
-  stat_summary(fun = mean, geom = "line") + 
-  stat_summary(fun = mean, geom = "point")
 
-mean(filter(app_wide, task_no < 3 & eventName == "Uploading")$runtime)
-
-mean(filter(app_wide, task_no > 2 & eventName == "Uploading")$runtime)
-
-length(unique(filter(app_wide, task_no == 2 & eventName == "Uploading" & runtime > 10)$hostname))
-
-length(unique(filter(app_wide, task_no == 6 & eventName == "Uploading" & 
-                       runtime > mean(filter(app_wide,task_no >2 & eventName == "Uploading")$runtime))$hostname))
-
-mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)
-
-mean(filter(app_wide, task_no == 1 & eventName == "TotalRender")$runtime)
-
-mean(filter(app_wide, task_no > 2 & eventName == "TotalRender")$runtime)

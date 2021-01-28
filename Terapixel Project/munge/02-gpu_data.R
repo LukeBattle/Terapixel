@@ -13,14 +13,18 @@ gpu_timestamp = lapply(gpu_data$timestamp,clean_date_time)
 
 gpu_datetime = parse_date_time(gpu_timestamp,"%Y%m%d %H%M%S")
 
-#create START variable with formatted datetimes to merge with totalrender_data dataset
+#create Time variable with formatted datetimes
 
 gpu_data$Time = gpu_datetime
+
+#arrange gpu_data by hostname and time
 
 gpu_data = gpu_data %>%
   arrange(hostname,Time)
 
 cache('gpu_data')
+
+#create list of unique hostnames in gpu
 
 unique_hostnames = unique(gpu_data$hostname)
 

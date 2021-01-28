@@ -1,5 +1,6 @@
 # assess gpu dataset quantitative values
 
+#distribution of temperature performance metric
 gputemp_plot  = ggplot(data = gpu_data, aes(x = gpuTempC)) +  
   geom_histogram(bins =30) +
   labs(
@@ -8,7 +9,7 @@ gputemp_plot  = ggplot(data = gpu_data, aes(x = gpuTempC)) +
     title = "Temperature Distribution "
   )
 
-
+#distribution of power draw performance metric
 gpupowerdraw_plot  = ggplot(data = gpu_data, aes(x = powerDrawWatt)) +  
   geom_histogram(bins=30) +
   labs(
@@ -17,7 +18,7 @@ gpupowerdraw_plot  = ggplot(data = gpu_data, aes(x = powerDrawWatt)) +
     title = "Power Draw Distribution"
   )
 
-
+#distribution of % RAM usage performance metric
 gpumemutil_plot  = ggplot(data = gpu_data, aes(x = gpuMemUtilPerc)) +  
   geom_histogram(bins = 30) +
   labs(
@@ -26,7 +27,7 @@ gpumemutil_plot  = ggplot(data = gpu_data, aes(x = gpuMemUtilPerc)) +
     title = "% Memory Utilised Distribution"
   )
 
-
+#distribution of % GPU usage performance metric
 gpuutil_plot  = ggplot(data = gpu_data, aes(x = gpuUtilPerc)) +  
   geom_histogram(bins =30) +
   labs(
@@ -35,7 +36,7 @@ gpuutil_plot  = ggplot(data = gpu_data, aes(x = gpuUtilPerc)) +
     title = "% GPU Core Used Distribution"
   )
 
-
+#distribution of runtime
 runtime_plot  = ggplot(data = filter(app_wide,eventName == "TotalRender"), aes(x = as.numeric(runtime))) +  
   geom_histogram() +
   labs(
@@ -45,12 +46,7 @@ runtime_plot  = ggplot(data = filter(app_wide,eventName == "TotalRender"), aes(x
   )
 
 
-perc_waiting_time = ggplot() + aes(vm_waiting_times) + geom_histogram(binwidth = 0.75)
-
-
-
 #plot to show significance of zeroes
-
 (zero_plot  = ggplot(data = filter(gpu_data,hostname == "04dc4e9647154250beeee51b866b0715000000" & 
                                      Time < "2018-11-08 08:00:00"), aes(x = Time, y = gpuMemUtilPerc)) +  
   geom_line() +
@@ -60,7 +56,7 @@ perc_waiting_time = ggplot() + aes(vm_waiting_times) + geom_histogram(binwidth =
     title = "Time vs % RAM usage"
   ))
 
-
+#plot to show significance of zeroes in different hostname
 (zero_plot2  = ggplot(data = filter(gpu_data,hostname == unique_hostnames[1] & 
                                       Time < "2018-11-08 08:00:00"), aes(x = Time, y = gpuMemUtilPerc)) +  
     geom_line() +
@@ -70,8 +66,7 @@ perc_waiting_time = ggplot() + aes(vm_waiting_times) + geom_histogram(binwidth =
       title = "Time vs % RAM usage"
     ))
 
-vm_waiting_times[1]
-
+#plot to be used for abstract, showing variation of average runtime over each event in each task number
 (abstract_plot = ggplot(app_wide, aes(task_no, runtime, color = eventName)) +
   stat_summary(fun = mean, geom = "line") + 
   stat_summary(fun = mean, geom = "point") + 
